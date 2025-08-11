@@ -40,7 +40,8 @@ async function syncGuestCartWithServer(userId, token) {
   );
 }
 
-export default function InitiativeProducts() {
+
+export default function Apparels() {
   const navigate = useNavigate();
   const { user, token, isTokenReady } = useAuth();
   const { refresh } = useCart();
@@ -122,10 +123,10 @@ export default function InitiativeProducts() {
       <ValidateOnLoad />
 
       {/* Section wrapper with new UI */}
-      <section className="bg-blue-50 py-12">
+      <section className="py-28 bg-[#BDD3E3]">
         {/* Heading */}
         <div className='w-[70%] mx-auto'>
-  <h3 className='text-[#256795] font-[manrope] text-[25px] text-center font-[600]'>Our Initiatives</h3>
+  <h3 className='text-[#256795] font-[manrope] text-[25px] text-center font-[600]'>Apparel Section</h3>
     <p className='text-[#0E283A] text-[16px] text-center font-[manrope] font-thin tracking-wide leading-8'>
         Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum.
     </p>
@@ -133,7 +134,7 @@ export default function InitiativeProducts() {
        
 
         {/* Green promo bar */}
-        <div className="mx-auto mb-10 w-[90%] h-60 bg-[#915757] rounded-xl" />
+        <div className="mx-auto mb-10 w-[90%] h-60 bg-[#497383] rounded-xl" />
 
         {/* Products Grid */}
         <div className="w-[90%] mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -146,7 +147,7 @@ export default function InitiativeProducts() {
             return (
               <div
                 key={`${product.id}-${vid}`}
-                className="rounded-xl shadow-lg overflow-hidden flex flex-col relative"
+                className="rounded-xl shadow-lg overflow-hidden flex flex-col relative bg-white"
               >
                 {/* Category badge */}
                 <span className="absolute top-2 left-2 inline-block rounded-full border border-[#8C7367] px-3 py-1 text-xs text-[#8C7367]">

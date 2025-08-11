@@ -1,93 +1,101 @@
-import React from 'react'
-import Slider from "react-slick";
-import { ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
-import test1 from '../../assets/test1.svg';
-import test2 from '../../assets/test2.svg';
-import test3 from '../../assets/test3.svg';
+// src/components/Testimonials.jsx
+import React, { useRef, useState } from 'react'
+import Slider from 'react-slick'
+import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline'
+import test1 from '../../assets/test1.svg'
+import test2 from '../../assets/test2.svg'
+import test3 from '../../assets/test3.svg'
 
 // Slide data
-const deals = [
-  {
-    id: 1,
-    img: test1,
-    name: "Full Name",
-    testimonial:
-      "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat."
-  },
-  {
-    id: 2,
-    img: test2,
-    name: "Full name",
-    testimonial:
-      "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat."
-  },
-  {
-    id: 3,
-    img: test3,
-    name: "Full Name",
-    testimonial:
-      "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat."
-  },
-];
+const DEALS = [
+  { id: 1, img: test1, name: 'Full Name', testimonial: 'Lorem ipsum dolor sit amet, ...' },
+  { id: 2, img: test2, name: 'Full Name', testimonial: 'Lorem ipsum dolor sit amet, ...' },
+  { id: 3, img: test3, name: 'Full Name', testimonial: 'Lorem ipsum dolor sit amet, ...' },
+  { id: 4, img: test1, name: 'Full Name', testimonial: 'Lorem ipsum dolor sit amet, ...' },
+]
 
-// Custom Arrow component
-const Arrow = ({ onClick, direction }) => (
-  <button
-    onClick={onClick}
-    className={`absolute top-1/2 -translate-y-1/2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-[#C5A291] backdrop-blur-lg transition
-      ${direction === "prev" ? "left-[-0.1rem]" : "right-[-0.1rem]"}`}
-  >
-    {direction === "prev" ? (
-      <ArrowLeftIcon className="h-5 w-5 text-white" />
-    ) : (
-      <ArrowRightIcon className="h-5 w-5 text-white" />
-    )}
-  </button>
-);
+export default function Testimonials() {
+  const sliderRef = useRef(null)
+  const [current, setCurrent] = useState(0)
+  const slidesToShow = 3
 
-// Slider settings
-const settings = {
-  dots: false,
-  arrows: true,
-  infinite: true,
-  speed: 500,
-  slidesToShow: 2,
-  slidesToScroll: 1,
-  prevArrow: <Arrow direction="prev" />,
-  nextArrow: <Arrow direction="next" />,
-  responsive: [
-    { breakpoint: 2048, settings: { slidesToShow: 3 } },
-    { breakpoint: 1024, settings: { slidesToShow: 1 } },
-  ],
-};
+  const settings = {
+    dots: false,
+    arrows: false,
+    infinite: false,
+    speed: 400,
+    slidesToShow,
+    slidesToScroll: 1,
+    afterChange: idx => setCurrent(idx),
+    responsive: [
+      { breakpoint: 1024, settings: { slidesToShow: 1 } },
+    ],
+  }
 
-function Testimonials() {
+  const maxIndex = DEALS.length - slidesToShow
+
   return (
-    <div className='bg-white w-full'>
-    <div className="w-[95%] md:w-[75%] mx-auto lg:py-16 py-8">
-        <div className='lg:w-[700px] w-[95%] mx-auto'>
-        <h1 className='text-[#B39384] font-[Luxia] text-center text-[27px] font-normal tracking-[0.5px]'>User Testimonials</h1>
-        <p className='font-[lato] text-[#53443D] text-center text-[16px] font-normal tracking-[0.5px]'>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.</p>
-        </div>
-        
-      <Slider {...settings}>
-        {deals.map((deal) => (
-          <div key={deal.id} className="flex flex-col items-start p-4 gap-5">
-            <div className="bg-[#EDE2DD] rounded-[24px]">
-              <div className="w-[300px] h-[250px] mx-auto flex flex-col items-center justify-center gap-3">
-                <img src={deal.img} alt="testimonial-profile" className="w-16 h-16 rounded-full object-cover" />
-                <div className="grid text-center p-2">
-                  <span className="text-[#C5A291] font-[lato] text-[21px] font-[700]">{deal.name}</span>
-                  <span className="text-[14px] font-[lato] text-gray-600">{deal.testimonial}</span>
-                </div>
+    <section className="bg-[#5A708E] text-white py-16 px-4">
+      {/* Heading */}
+      <div className="max-w-3xl mx-auto text-center mb-8">
+        <h2 className="text-3xl font-medium">User testimonials</h2>
+        <p className="mt-2 text-sm leading-relaxed">
+          Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
+        </p>
+      </div>
+
+      {/* Slider */}
+      <div className="max-w-6xl mx-auto">
+        <Slider ref={sliderRef} {...settings}>
+          {DEALS.map(deal => (
+            <div key={deal.id} className="px-3">
+              <div className="bg-blue-100 text-blue-900 rounded-xl p-8 flex flex-col items-center h-full">
+                <img src={deal.img} alt={deal.name} className="w-16 h-16 rounded-full mb-4" />
+                <h3 className="text-lg font-semibold mb-2">{deal.name}</h3>
+                <p className="text-center text-sm leading-relaxed">{deal.testimonial}</p>
               </div>
             </div>
-          </div>
-        ))}
-      </Slider>
-    </div>
-    </div>
-  );
-}
+          ))}
+        </Slider>
 
-export default Testimonials;
+        {/* Custom nav */}
+        <div className="mt-6 flex items-center justify-center space-x-4 text-white">
+          {/* Prev */}
+          <button
+            onClick={() => sliderRef.current.slickPrev()}
+            disabled={current === 0}
+            className="disabled:opacity-50"
+          >
+            <ArrowLeftIcon className="h-6 w-6" />
+          </button>
+
+          {/* Dots */}
+          <div className="flex items-center space-x-2 text-xl">
+            {Array.from({ length: maxIndex + 1 }).map((_, i) => (
+              <span
+                key={i}
+                className={`transition-colors ${
+                  i === current ? 'text-white' : 'text-blue-300'
+                }`}
+                onClick={() => {
+                  sliderRef.current.slickGoTo(i)
+                }}
+              >
+                •
+              </span>
+            ))}
+          </div>
+
+          {/* Next */}
+          <button
+            onClick={() => sliderRef.current.slickNext()}
+            disabled={current === maxIndex}
+            className="disabled:opacity-50"
+          >
+            <ArrowRightIcon className="h-6 w-6" />
+          </button>
+        </div>
+      </div>
+    </section>
+  )
+}

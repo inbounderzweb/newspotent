@@ -168,104 +168,166 @@
 
 
 
-import { useState } from 'react'
-import logonews from '../../assets/logonews.svg'
-import burgerMenu from '../../assets/burger-menu.svg'
-import closeIcon from '../../assets/close.svg'      // ← your “X” icon
-import OffCanvas from './OffCanvas'
-import Home from '../../assets/home.svg'
-import Home1 from '../../assets/home2.svg'
-import Marquee from './Marquee'
-import SearchModal  from '../search/Search';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
-import search  from '../../assets/search.svg';
-import CartDrawer   from '../cartdraw/CartDrawer';
-import cartIco from '../../assets/Cart.svg';
+// src/components/layout/Header.jsx
+import React, { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+
+import logonews   from "../../assets/logonews.svg";
+import burgerMenu from "../../assets/burger-menu.svg";
+import closeIcon  from "../../assets/close.svg";
+import search     from "../../assets/search.svg";
+import cartIco    from "../../assets/Cart.svg";
+
+import OffCanvas   from "./OffCanvas";
+import Marquee     from "./Marquee";
+import SearchModal from "../search/Search";
+import CartDrawer  from "../cartdraw/CartDrawer";
+import profile from '../../assets/profile.svg';
+import { useAuth } from '../../context/AuthContext';
 
 
-// define your menu items and which image they should show when hovered
+
+// demo images for the preview (use your real ones)
+import Home  from "../../assets/home.svg";
+import Home1 from "../../assets/home2.svg";
+import AuthModal    from '../../Authmodal/AuthModal';
+
+
 const MENU_ITEMS = [
-  { title: 'Home',      image: Home },
-  { title: 'About Us',  image: Home1 },
-  { title: 'Products',  image: Home },
-  { title: 'Services',  image: Home1 },
-  { title: 'Categories',image: Home },
-  { title: 'Blog',      image: Home1 },
-  { title: 'Contact us',image: Home },
-]
-
-function Header() {
-  const [isOpen, setIsOpen] = useState(false)
-  const toggle = () => setIsOpen(o => !o)
-
-  const [searchOpen, setSearchOpen] = useState(false);  // search modal
-  const [cartOpen,   setCartOpen]   = useState(false);  // cart drawer
-
-const mockCart = [
-  { id: 1, title: 'Bangalore Bloom Men’s', price: 399, qty: 1,
-    img: 'https://placehold.co/200x240?text=Perfume' },
-  { id: 2, title: 'Bangalore Bloom Men’s', price: 399, qty: 1,
-    img: 'https://placehold.co/200x240?text=Perfume' },
+  { title: "Home",       image: Home  },
+  { title: "About Us",   image: Home1 },
+  { title: "Products",   image: Home  },
+  { title: "Services",   image: Home1 },
+  { title: "Categories", image: Home  },
+  { title: "Blog",       image: Home1 },
+  { title: "Contact us", image: Home  },
 ];
 
-const discoverMore = Array.from({ length: 5 }, (_, i) => ({
-  id: i + 10,
-  title: 'Bangalore Bloom Men’s',
-  img: 'https://placehold.co/160x200?text=Perfume',
-}));
+export default function Header() {
+  const [isOpen, setIsOpen]         = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [cartOpen, setCartOpen]     = useState(false);
+  const [authOpen,   setAuthOpen]   = useState(false);  // login / signup
 
-const navigate = useNavigate();
+
+  // sticky on scroll
+  const [scrolled, setScrolled] = useState(false);
+  const [h, setH] = useState(72);
+  const wrapRef = useRef(null);
+
+
+    const { user, token } = useAuth();
+
+
+
+  useEffect(() => {
+    if (wrapRef.current) setH(wrapRef.current.offsetHeight);
+
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        setScrolled(window.scrollY > 10);
+        ticking = false;
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const toggle = () => setIsOpen(o => !o);
+  const navigate = useNavigate();
+
+  // mock cart (replace with real)
+  const mockCart = [
+    { id: 1, title: "Bangalore Bloom Men’s", price: 399, qty: 1, img: "https://placehold.co/200x240?text=Perfume" },
+    { id: 2, title: "Bangalore Bloom Men’s", price: 399, qty: 1, img: "https://placehold.co/200x240?text=Perfume" },
+  ];
+  const discoverMore = Array.from({ length: 5 }, (_, i) => ({
+    id: i + 10, title: "Bangalore Bloom Men’s", img: "https://placehold.co/160x200?text=Perfume",
+  }));
 
   return (
     <>
-      <header className="bg-white py-4">
-        <div className="flex px-4 lg:px-20 items-center justify-between mx-auto">
-          <Link to={'/'}><img src={logonews} alt="The Newspotent logo" className='cursor-pointer' /></Link>
+      {/* spacer prevents content jump when header becomes fixed */}
+      <div style={{ height: scrolled ? h : 0 }} />
 
-          <div className='flex gap-5 items-center'>
+      <div
+        ref={wrapRef}
+        className={scrolled ? "fixed top-0 left-0 w-full z-50" : "relative w-full z-50"}
+      >
+        <header
+          className={[
+            "mx-auto flex items-center justify-between px-4 lg:px-20",
+            "transition-all duration-300 ease-out bg-white",
+            scrolled ? "h-[68px] shadow-md backdrop-blur supports-[backdrop-filter]:bg-white/90" : "h-[72px]",
+          ].join(" ")}
+        >
+          <Link to="/">
+            <img src={logonews} alt="The Newspotent logo" className="cursor-pointer h-8" />
+          </Link>
 
+          <div className="flex items-center gap-5">
 
-<img src={cartIco} alt="Cart" className="cursor-pointer w-[27px]" onClick={() => setCartOpen(true)} />
- <img src={search} onClick={() => setSearchOpen(true)} alt="Search" className="cursor-pointer" />
+                 <img
+                   src={profile}
+                   alt="Profile"
+                   className="cursor-pointer"
+                   onClick={() => user ? navigate('/user-profile') : setAuthOpen(true)}
+                 />
 
-          <button onClick={toggle} aria-label="Menu toggle" className="focus:outline-none">
             <img
-              src={isOpen ? closeIcon : burgerMenu}
-              alt={isOpen ? 'Close menu' : 'Open menu'}
-              className="w-6 h-6"
+              src={cartIco}
+              alt="Cart"
+              className="cursor-pointer w-[27px]"
+              onClick={() => setCartOpen(true)}
             />
-          </button>
-
+            <img
+              src={search}
+              alt="Search"
+              className="cursor-pointer"
+              onClick={() => setSearchOpen(true)}
+            />
+            <button onClick={toggle} aria-label="Menu toggle" className="focus:outline-none">
+              <img
+                src={isOpen ? closeIcon : burgerMenu}
+                alt={isOpen ? "Close menu" : "Open menu"}
+                className="w-6 h-6"
+              />
+            </button>
           </div>
+        </header>
+      </div>
 
-         
-       
-        </div>
-      </header>
 
-       <CartDrawer
+    <AuthModal  open={authOpen}  onClose={() => setAuthOpen(false)} />
+
+
+      {/* Drawers / Modals */}
+      <CartDrawer
         open={cartOpen}
         onClose={() => setCartOpen(false)}
-        cart={mockCart}              // replace with real cart
-        onInc={id => {/* +1 logic */}}
-        onDec={id => {/* -1 logic */}}
-        onRemove={id => {/* remove logic */}}
-        recommended={discoverMore}   // optional
+        cart={mockCart}
+        onInc={() => {}}
+        onDec={() => {}}
+        onRemove={() => {}}
+        recommended={discoverMore}
       />
 
       <SearchModal
-         open={searchOpen}
+        open={searchOpen}
         onClose={() => setSearchOpen(false)}
         onSubmit={(q) => navigate(`/search?q=${encodeURIComponent(q)}`)}
-       />
+      />
+
       <OffCanvas
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         menuItems={MENU_ITEMS}
       />
+
       <Marquee />
     </>
-  )
+  );
 }
-
-export default Header
