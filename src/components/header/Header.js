@@ -270,7 +270,8 @@ export default function Header() {
 
           <div className="flex items-center gap-5">
 
-                 <img
+            <div className=" items-center gap-5 hidden lg:flex">
+                    <img
                    src={profile}
                    alt="Profile"
                    className="cursor-pointer"
@@ -289,16 +290,53 @@ export default function Header() {
               className="cursor-pointer"
               onClick={() => setSearchOpen(true)}
             />
-            <button onClick={toggle} aria-label="Menu toggle" className="focus:outline-none">
+            </div>
+                
+                <div>
+              <button onClick={toggle} aria-label="Menu toggle" className="focus:outline-none">
               <img
                 src={isOpen ? closeIcon : burgerMenu}
                 alt={isOpen ? "Close menu" : "Open menu"}
-                className="w-6 h-6"
+                className="w-5 h-5"
               />
             </button>
+                </div>
+          
+
+
           </div>
+
+
         </header>
       </div>
+
+
+  {/* ─── Fixed Bottom Nav (mobile only) ───────── */}
+       <nav className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t shadow-inner z-50">
+         <ul className="flex justify-around items-center py-2">
+           <li onClick={() => setSearchOpen(true)} className="cursor-pointer flex gap-2">
+             <img src={search} alt="Search" className="w-6 h-6 mx-auto" />
+             <span className="text-xs mt-1 block">Search</span>
+           </li>
+           <li onClick={() => setCartOpen(true)} className="cursor-pointer flex gap-2">
+             <img src={cartIco} alt="Cart" className="w-6 h-6 mx-auto" />
+             <span className="text-xs mt-1 block">Cart</span>
+           </li>
+           <li
+             onClick={() => user ? navigate('/user-profile') : setAuthOpen(true)}
+             className="cursor-pointer flex gap-2"
+           >
+             <img src={profile} alt="Profile" className="w-6 h-6 mx-auto" />
+             <span className="text-xs mt-1 block">{user ? 'Profile' : 'Login'}</span>
+           </li>
+         </ul>
+       </nav>
+
+
+
+
+
+
 
 
     <AuthModal  open={authOpen}  onClose={() => setAuthOpen(false)} />
