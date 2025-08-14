@@ -40,6 +40,7 @@ async function syncGuestCartWithServer(userId, token) {
   );
 }
 
+
 export default function Brand() {
   const navigate = useNavigate();
   const { user, token, isTokenReady } = useAuth();
@@ -136,11 +137,14 @@ export default function Brand() {
       <section className="bg-blue-50 py-12">
         {/* Heading */}
         <h2 className="text-center text-2xl font-semibold text-blue-800 mb-6">
-          Products
+       Shop by brand
         </h2>
 
+        <p className='font-manrope text-[16px] leading-[170%] text-center text-[#000] mb-6'>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod 
+tincidunt ut laoreet dolore magna aliquam erat volutpat.</p>
+
         {/* Green promo bar */}
-        <div className="mx-auto mb-10 w-[90%] h-60 bg-green-800 rounded-xl" />
+        {/* <div className="mx-auto mb-10 w-[90%] h-60 bg-green-800 rounded-xl" /> */}
 
         {/* Desktop: grid | Mobile/Tablet: horizontal scroll-snap strip */}
         {isMobile ? (

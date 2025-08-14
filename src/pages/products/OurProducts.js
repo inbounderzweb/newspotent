@@ -136,11 +136,11 @@ export default function OurProducts() {
       <section className="bg-blue-50 py-12">
         {/* Heading */}
         <h2 className="text-center text-2xl font-semibold text-blue-800 mb-6">
-          Products
+         Our Products
         </h2>
 
         {/* Green promo bar */}
-        <div className="mx-auto mb-10 w-[90%] h-60 bg-green-800 rounded-xl" />
+        <div className="mx-auto mb-10 w-[90%] h-60 bg-[#676586] rounded-xl" />
 
         {/* Desktop: grid | Mobile/Tablet: horizontal scroll-snap strip */}
         {isMobile ? (

@@ -140,7 +140,7 @@ export default function ProductList() {
         </h2>
 
         {/* Green promo bar */}
-        <div className="mx-auto mb-10 w-[90%] h-60 bg-green-800 rounded-xl" />
+        <div className="mx-auto mb-10 w-[90%] h-60 bg-[#34552B] rounded-xl" />
 
         {/* Desktop: grid | Mobile/Tablet: horizontal scroll-snap strip */}
         {isMobile ? (
