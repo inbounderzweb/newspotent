@@ -1,5 +1,5 @@
 // src/components/ProductList.js
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import qs from 'qs';
@@ -9,8 +9,46 @@ import ValidateOnLoad from '../../components/ValidateOnLoad';
 import { useGetProductsQuery } from '../../features/product/productApi';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
+import Spinner from '../../components/loader/Spinner';
 
 const API_BASE = 'https://ikonixperfumer.com/beta/api';
+
+// --- Guest cart helpers here match CartContext’s format & sanitation ---
+const readGuest = () => {
+  const raw = JSON.parse(localStorage.getItem('guestCart') || '[]');
+  const normalized = (Array.isArray(raw) ? raw : []).map(x => ({
+    id:    x.productid ?? x.id,
+    vid:   x.variantid ?? x.vid,
+    name:  x.name,
+    image: x.image,
+    price: Number(x.price) || 0,
+    qty:   Number(x.qty)   || 1,
+  }));
+  const byKey = new Map();
+  for (const it of normalized) {
+    const key = `${it.id}::${it.vid}`;
+    const prev = byKey.get(key);
+    byKey.set(
+      key,
+      prev
+        ? { ...it, qty: (Number(prev.qty) || 0) + (Number(it.qty) || 0) }
+        : it
+    );
+  }
+  return Array.from(byKey.values());
+};
+
+const writeGuest = arr => {
+  const safe = (Array.isArray(arr) ? arr : []).map(i => ({
+    id:    i.id,
+    vid:   i.vid ?? i.variantid,
+    name:  i.name,
+    image: i.image,
+    price: Number(i.price) || 0,
+    qty:   Number(i.qty)   || 1,
+  }));
+  localStorage.setItem('guestCart', JSON.stringify(safe));
+};
 
 // Sync guest → server cart
 async function syncGuestCartWithServer(userId, token) {
@@ -25,18 +63,15 @@ async function syncGuestCartWithServer(userId, token) {
     }
   );
   const items = resp.data?.data || [];
-  localStorage.setItem(
-    'guestCart',
-    JSON.stringify(
-      items.map(it => ({
-        id:    it.id,
-        vid:   it.variantid ?? it.vid,
-        name:  it.name,
-        image: it.image,
-        price: it.price,
-        qty:   Number(it.qty),
-      }))
-    )
+  writeGuest(
+    items.map(it => ({
+      id:    it.id,
+      vid:   it.variantid ?? it.vid,
+      name:  it.name,
+      image: it.image,
+      price: Number(it.price) || 0,
+      qty:   Number(it.qty)   || 1,
+    }))
   );
 }
 
@@ -45,36 +80,66 @@ export default function ProductList() {
   const { user, token, isTokenReady } = useAuth();
   const { refresh } = useCart();
 
-  const { data, isLoading, isError, refetch } = useGetProductsQuery(
+  // ▶︎ Fire the products request—but only after token is ready:
+  const {
+    data,
+    isLoading,
+    isError,
+    refetch,
+  } = useGetProductsQuery(
     undefined,
     { skip: !isTokenReady }
   );
 
+  // ▶︎ Once token lands, retry the fetch
   useEffect(() => {
-    if (isTokenReady) refetch();
+    if (isTokenReady) {
+      refetch();
+    }
   }, [isTokenReady, refetch]);
 
   const products = data?.data || [];
 
-  // Guest-cart helpers
-  const readGuest  = () => JSON.parse(localStorage.getItem('guestCart') || '[]');
-  const writeGuest = arr => localStorage.setItem('guestCart', JSON.stringify(arr));
+  // Build category filters
+  const categoryList = useMemo(
+    () => [...new Set(products.map(p => p.category_name))],
+    [products]
+  );
+  const filters = ['Our Bestsellers', ...categoryList];
+  const [selectedCategory, setSelectedCategory] = useState(filters[0]);
+  const filtered = useMemo(
+    () =>
+      selectedCategory === 'Our Bestsellers'
+        ? products
+        : products.filter(p => p.category_name === selectedCategory),
+    [selectedCategory, products]
+  );
 
   const saveGuestCart = product => {
-    const raw     = readGuest();
+    const current = readGuest();
     const variant = product.variants?.[0] || {};
     const vid     = variant.vid;
-    const price   = variant.sale_price || variant.price || 0;
-    const idx     = raw.findIndex(i => i.id === product.id && i.vid === vid);
+    const price   = Number(variant.sale_price || variant.price || 0) || 0;
 
-    if (idx > -1) raw[idx].qty += 1;
-    else raw.push({ id: product.id, vid, name: product.name, image: product.image, price, qty: 1 });
-
-    writeGuest(raw);
+    const idx = current.findIndex(i => i.id === product.id && i.vid === vid);
+    if (idx > -1) {
+      current[idx].qty = (Number(current[idx].qty) || 0) + 1;
+    } else {
+      current.push({
+        id:    product.id,
+        vid,
+        name:  product.name,
+        image: product.image,
+        price,
+        qty:   1,
+      });
+    }
+    writeGuest(current);
     alert(`${product.name} added to cart (guest)`);
     refresh();
   };
 
+  // Add to cart handler
   const handleAddToCart = async product => {
     if (!token || !user) {
       saveGuestCart(product);
@@ -97,12 +162,12 @@ export default function ProductList() {
           },
         }
       );
-      if (resp.success) {
+      if (resp?.success) {
         alert(`${product.name} added to cart`);
         await syncGuestCartWithServer(user.id, token);
         refresh();
       } else {
-        alert(resp.message || 'Failed to add to cart');
+        alert(resp?.message || 'Failed to add to cart');
       }
     } catch (error) {
       console.error('❌ Error adding to cart:', error?.response?.data || error);
@@ -110,214 +175,110 @@ export default function ProductList() {
     }
   };
 
-  // --- Mobile horizontal scrolling setup ---
-  const scrollerRef = useRef(null);
-  const [isMobile, setIsMobile] = useState(() => (typeof window !== 'undefined' ? window.innerWidth <= 1024 : true));
-  useEffect(() => {
-    const onResize = () => setIsMobile(window.innerWidth <= 1024);
-    window.addEventListener('resize', onResize, { passive: true });
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
-
-  const scrollByAmount = (dir = 1) => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    const amount = Math.round(window.innerWidth * 0.75); // ~ 75% of viewport
-    el.scrollBy({ left: dir * amount, behavior: 'smooth' });
-  };
-
-  if (isLoading) return <p className="text-center py-8">Loading…</p>;
-  if (isError)   return <p className="text-center py-8">Error loading products.</p>;
+  if (isLoading) return <p className="text-center py-8">
+    <Spinner/>
+  </p>;
+  if (isError)   return <p className="text-center py-8">Error loading products..</p>;
 
   return (
     <>
+      {/* kick off token validation */}
       <ValidateOnLoad />
 
-      <section className="bg-blue-50 py-12">
-        {/* Heading */}
-        <h2 className="text-center text-2xl font-semibold text-blue-800 mb-6">
-          Products
-        </h2>
-
-        {/* Green promo bar */}
-        <div className="mx-auto mb-10 w-[90%] h-60 bg-[#34552B] rounded-xl" />
-
-        {/* Desktop: grid | Mobile/Tablet: horizontal scroll-snap strip */}
-        {isMobile ? (
-          <div className="relative w-[90%] mx-auto">
-            {/* edge gradients */}
-            <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-blue-50 to-transparent" />
-            <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-blue-50 to-transparent" />
-
-            {/* Scroll track */}
-            <div
-              ref={scrollerRef}
-              className="
-                flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-2
-                [-ms-overflow-style:none] [scrollbar-width:none]
-              "
-              style={{ scrollbarWidth: 'none' }}
+      <section className="mx-auto w-[90%] md:w-[75%] py-8">
+        {/* Filter Pills */}
+        <div className="flex gap-4 mb-6 overflow-x-auto scrollbar-hide pb-4">
+          {filters.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`
+                px-4 py-2 rounded-full flex-shrink-0 transition
+                ${selectedCategory === cat
+                  ? 'bg-[#b49d91] text-white'
+                  : 'bg-white text-[#b49d91] border border-[#b49d91]'}
+              `}
             >
-              {/* hide scrollbar (WebKit) */}
-              <style>{`
-                .hide-scrollbar::-webkit-scrollbar { display: none; }
-              `}</style>
+              {cat}
+            </button>
+          ))}
+        </div>
 
-              {products.map(product => {
-                const variant = product.variants?.[0] || {};
-                const msrp    = Number(variant.price)      || 0;
-                const sale    = Number(variant.sale_price) || msrp;
-                const vid     = variant.vid;
+        {/* Products Grid/List */}
+        <div
+          className="
+            flex flex-row gap-6 overflow-x-auto pb-4
+            sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:overflow-visible sm:pb-0
+          "
+        >
+          {filtered.map(product => {
+            const variant = product.variants?.[0] || {};
+            const vid     = variant.vid;
+            const msrp    = Number(variant.price)      || 0;
+            const sale    = Number(variant.sale_price) || msrp;
 
-                return (
-                  <div
-                    key={`${product.id}-${vid}`}
-                    className="
-                      hide-scrollbar snap-start shrink-0
-                      w-[78vw] sm:w-[60vw]
-                      max-w-[420px]
-                      rounded-xl shadow-lg overflow-hidden relative bg-white
-                    "
-                  >
-                    {/* Category badge */}
-                    <span className="absolute top-2 left-2 inline-block rounded-full border border-[#8C7367] px-3 py-1 text-xs text-[#8C7367] bg-white/90">
-                      {product.category_name}
-                    </span>
-
-                    {/* Add-to-cart button */}
-                    <button
-                      onClick={e => {
-                        e.stopPropagation();
-                        handleAddToCart(product);
-                      }}
-                      className="absolute top-2 right-2 rounded-full p-1 bg-white/90 shadow"
-                    >
-                      <img src={bag} alt="cart" className="h-6 w-6" />
-                    </button>
-
-                    {/* Product Image */}
-                    <img
-                      onClick={() =>
-                        navigate('/product-details', { state: { product, vid } })
-                      }
-                      src={`https://ikonixperfumer.com/beta/assets/uploads/${product.image}`}
-                      alt={product.name}
-                      className="w-full h-72 object-cover cursor-pointer"
-                    />
-
-                    {/* Info */}
-                    <div className="text-center grid gap-3 my-5 px-3">
-                      <h3 className="text-[#2A3443] font-[Lato] text-[16px] leading-snug">
-                        {product.name}
-                      </h3>
-
-                      <div className="flex items-center justify-center gap-2">
-                        {sale < msrp && (
-                          <span className="text-sm line-through text-[#2A3443]/60">
-                            ₹{msrp}/-
-                          </span>
-                        )}
-                        <span className="font-semibold text-[#2A3443]">
-                          ₹{sale}/-
-                        </span>
-                      </div>
-
-                      <button
-                        onClick={() => navigate('/product-details', { state: { product, vid } })}
-                        className="bg-[#2972A5] py-2 px-4 text-white text-[16px] mx-10 rounded-[24px]"
-                      >
-                        View Product
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Seek buttons */}
-            {/* <div className="mt-4 flex items-center justify-between">
-              <button
-                onClick={() => scrollByAmount(-1)}
-                className="rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+            return (
+              <div
+                key={`${product.id}-${vid}`}
+                className="min-w-[80%] lg:min-w-[60%] sm:min-w-0 relative overflow-hidden rounded-[10px]"
               >
-                Prev
-              </button>
-              <button
-                onClick={() => scrollByAmount(1)}
-                className="rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
-              >
-                Next
-              </button>
-            </div> */}
-          </div>
-        ) : (
-          <div className="w-[90%] mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {products.map(product => {
-              const variant = product.variants?.[0] || {};
-              const msrp    = Number(variant.price)      || 0;
-              const sale    = Number(variant.sale_price) || msrp;
-              const vid     = variant.vid;
+                {/* Category badge */}
+                <span className="absolute top-2 left-2 inline-block rounded-full border border-[#8C7367] px-3 py-1 text-xs text-[#8C7367]">
+                  {product.category_name}
+                </span>
 
-              return (
-                <div
-                  key={`${product.id}-${vid}`}
-                  className="rounded-xl shadow-lg overflow-hidden flex flex-col relative bg-white"
+                {/* Add-to-cart button */}
+                <button
+                  onClick={e => {
+                    e.stopPropagation();
+                    handleAddToCart(product);
+                  }}
+                  className="absolute top-2 right-2 rounded-full p-1"
                 >
-                  <span className="absolute top-2 left-2 inline-block rounded-full border border-[#8C7367] px-3 py-1 text-xs text-[#8C7367] bg-white/90">
-                    {product.category_name}
-                  </span>
+                  <img src={bag} alt="cart" className="h-6 w-6" />
+                </button>
 
-                  <button
-                    onClick={e => {
-                      e.stopPropagation();
-                      handleAddToCart(product);
-                    }}
-                    className="absolute top-2 right-2 rounded-full p-1 bg-white/90 shadow"
-                  >
-                    <img src={bag} alt="cart" className="h-6 w-6" />
-                  </button>
+                {/* Product Image */}
+                <img
+                  onClick={() =>
+                    navigate('/product-details', {
+                      state: { product, vid },
+                    })
+                  }
+                  src={`https://ikonixperfumer.com/beta/assets/uploads/${product.image}`}
+                  alt={product.name}
+                  className="w-full h-72 object-cover cursor-pointer"
+                />
 
-                  <img
-                    onClick={() => navigate('/product-details', { state: { product, vid } })}
-                    src={`https://ikonixperfumer.com/beta/assets/uploads/${product.image}`}
-                    alt={product.name}
-                    className="w-full h-72 object-cover cursor-pointer"
-                  />
-
-                  <div className="text-center grid gap-3 my-5 px-3">
+                {/* Info */}
+                <div className="pt-4 flex justify-between items-start">
+                  <div>
                     <h3 className="text-[#2A3443] font-[Lato] text-[16px] leading-snug">
                       {product.name}
                     </h3>
-
-                    <div className="flex items-center justify-center gap-2">
-                      {sale < msrp && (
-                        <span className="text-sm line-through text-[#2A3443]/60">
-                          ₹{msrp}/-
-                        </span>
-                      )}
-                      <span className="font-semibold text-[#2A3443]">
-                        ₹{sale}/-
+                    <p className="text-[#2A3443] font-[Lato] text-[14px]">
+                      {product.category_name}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    {sale < msrp && (
+                      <span className="text-xs line-through text-[#2A3443] font-[Lato] block">
+                        ₹{msrp}/-
                       </span>
-                    </div>
-
-                    <button
-                      onClick={() => navigate('/product-details', { state: { product, vid } })}
-                      className="bg-[#2972A5] py-2 px-4 text-white text-[16px] mx-10 rounded-[24px]"
-                    >
-                      View Product
-                    </button>
+                    )}
+                    <span className="font-semibold text-[#2A3443]">₹{sale}/-</span>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
+              </div>
+            );
+          })}
+        </div>
 
-        {/* View All Products (kept) */}
+        {/* View All */}
         <div className="flex justify-center mt-8">
           <button
             onClick={() => navigate('/shop')}
-            className="px-6 py-2 text-[#0E283A] border-[1px] border-[#0E283A] rounded-full hover:opacity-90 transition"
+            className="px-6 py-2 bg-[#b49d91] text-white rounded-full hover:opacity-90 transition"
           >
             View all Products
           </button>

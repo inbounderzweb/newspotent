@@ -150,10 +150,10 @@ export default function ProductDetails() {
         <Link to="/">Home</Link> / <Link to="/shop">Products</Link> / <span>{product.name}</span>
       </nav>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
         {/* gallery */}
         <div>
-          <div className="w-full h-[340px] md:h-[420px] bg-gray-50 rounded-xl overflow-hidden flex items-center justify-center">
+          <div className="w-full rounded-xl overflow-hidden flex items-center justify-center">
             {activeImg && (
               <img
                 src={`https://ikonixperfumer.com/beta/assets/uploads/${activeImg}`}
@@ -168,11 +168,11 @@ export default function ProductDetails() {
                 <button
                   key={img}
                   onClick={() => setActiveImg(img)}
-                  className={`h-20 border rounded-lg overflow-hidden ${
+                  className={`h-[4rem] lg:h-[9rem] border rounded-lg overflow-hidden ${
                     img === activeImg ? 'border-[#b49d91]' : 'border-gray-200'
                   }`}
                 >
-                  <img src={`https://ikonixperfumer.com/beta/assets/uploads/${img}`} alt="" className="w-full h-full object-contain"/>
+                  <img src={`https://ikonixperfumer.com/beta/assets/uploads/${img}`} alt="" className="object-cover"/>
                 </button>
               ))}
             </div>
