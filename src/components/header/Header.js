@@ -23,9 +23,9 @@ const MENU_ITEMS = [
   { title: "Home",       to: "/",           image: Home  },
   { title: "About Us",   to: "/about",      image: Home1 },
   { title: "Products",   to: "/shop",   image: Home  },
-  { title: "Services",   to: "/services",   image: Home1 },
-  { title: "Categories", to: "/categories", image: Home  },
-  { title: "Blog",       to: "/blog",       image: Home1 },
+  // { title: "Services",   to: "/services",   image: Home1 },
+  // { title: "Categories", to: "/categories", image: Home  },
+  // { title: "Blog",       to: "/blog",       image: Home1 },
   { title: "Contact us", to: "/contact",    image: Home  },
 ];
 

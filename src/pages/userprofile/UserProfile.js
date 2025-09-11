@@ -54,16 +54,16 @@ export default function UserProfile() {
           <span className="text-gray-700">My Profile</span>
         </nav>
 
-        <h1 className="text-4xl font-semibold text-[#6d5a52] mb-8">My Profile</h1>
+        <h1 className="text-4xl font-semibold text-[#194463] mb-8">My Profile</h1>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-[#eadcd5] overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-sm border border-[#194463] overflow-hidden">
           {/* Header */}
-          <div className="bg-[#eadcd5] px-6 py-4 flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-[#6d5a52]">Account Details</h2>
+          <div className="px-6 py-4 flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-[#194463]">Account Details</h2>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 text-sm bg-[#1e2633] text-white px-4 py-2 rounded-xl hover:opacity-90 transition"
+              className="flex items-center gap-2 text-sm bg-[#2972A5] text-white px-4 py-2 rounded-xl hover:opacity-90 transition"
             >
               <ArrowRightOnRectangleIcon className="w-4 h-4" />
               Logout
@@ -104,7 +104,7 @@ export default function UserProfile() {
 function Row({ label, value, copyable = false, onCopy, copied }) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-sm">
-      <span className="font-medium text-[#2A3443]">{label}</span>
+      <span className="font-medium text-[#194463]">{label}</span>
       <div className="flex items-center gap-2">
         <span className="break-all">{value}</span>
         {copyable && (
@@ -113,7 +113,7 @@ function Row({ label, value, copyable = false, onCopy, copied }) {
             className="p-1 hover:bg-gray-100 rounded"
             title="Copy"
           >
-            <ClipboardDocumentIcon className="w-4 h-4 text-[#6d5a52]" />
+            <ClipboardDocumentIcon className="w-4 h-4 text-[#194463]" />
           </button>
         )}
         {copied && <span className="text-xs text-green-600 ml-1">Copied!</span>}
@@ -125,7 +125,7 @@ function Row({ label, value, copyable = false, onCopy, copied }) {
 function TokenRow({ label, value, show, onToggle, onCopy, copied }) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-sm">
-      <span className="font-medium text-[#2A3443]">{label}</span>
+      <span className="font-medium text-[#194463]">{label}</span>
       <div className="flex items-center gap-2">
         <span className="break-all">
           {show ? value : masked(value)}
@@ -136,9 +136,9 @@ function TokenRow({ label, value, show, onToggle, onCopy, copied }) {
           title={show ? 'Hide' : 'Show'}
         >
           {show ? (
-            <EyeSlashIcon className="w-4 h-4 text-[#6d5a52]" />
+            <EyeSlashIcon className="w-4 h-4 text-[#194463]" />
           ) : (
-            <EyeIcon className="w-4 h-4 text-[#6d5a52]" />
+            <EyeIcon className="w-4 h-4 text-[#194463]" />
           )}
         </button>
         <button
@@ -146,7 +146,7 @@ function TokenRow({ label, value, show, onToggle, onCopy, copied }) {
           className="p-1 hover:bg-gray-100 rounded"
           title="Copy token"
         >
-          <ClipboardDocumentIcon className="w-4 h-4 text-[#6d5a52]" />
+          <ClipboardDocumentIcon className="w-4 h-4 text-[#194463]" />
         </button>
         {copied && <span className="text-xs text-green-600 ml-1">Copied!</span>}
       </div>
@@ -159,10 +159,10 @@ function QuickLink({ to, title }) {
   return (
     <Link
       to={to}
-      className="bg-white border border-[#eadcd5] rounded-2xl px-6 py-5 text-[#6d5a52] hover:shadow-md transition flex items-center justify-between text-sm font-medium"
+      className="bg-white border border-[#194463] rounded-2xl px-6 py-5 text-[#194463] hover:shadow-md transition flex items-center justify-between text-sm font-medium"
     >
       {title}
-      <span className="text-[#b49d91]">→</span>
+      <span className="text-[#194463]">→</span>
     </Link>
   );
 }

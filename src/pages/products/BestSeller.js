@@ -213,7 +213,7 @@ export default function BestSeller() {
                     <span className="font-normal leading-[170%] tracking-[0.5px] text-[18px] text-[#2972A5]">₹{sale}/-</span>
                     <br/>
                        <button className='text-center w-full lg:w-[50%] mx-auto justify-center items-center bg-[#2972A5] text-white py-2 rounded-full mt-2'  onClick={() =>
-                    navigate('/product-details', {
+                    navigate('/shop', {
                       state: { product, vid },
                     })
                   }>View Product</button>
@@ -229,7 +229,7 @@ export default function BestSeller() {
           {/* Bottom control bar: left CTA, right arrows */}
           <div className="absolute bottom-2 left-0 w-full flex items-center justify-between px-2">
             <button
-              onClick={() => navigate("/products")}
+              onClick={() => navigate("/shop")}
               className="rounded-full border border-gray-300 bg-white px-5 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
             >
               View All Products

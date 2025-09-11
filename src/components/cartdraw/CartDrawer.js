@@ -65,23 +65,23 @@ export default function CartDrawer({ open, onClose }) {
       >
         {/* Header */}
         <div className="p-4 border-b flex items-center justify-between">
-          <div className="font-semibold font-[luxia] text-[#53443D] flex gap-2 items-center">
-           <span className='text-[18px]'>Cart</span> <p className='text-[#8C7367] text-[14px]'>({totalCount > 0 && <>{totalCount} items</>})</p>
+          <div className="font-semibold font-[luxia] text-[#194463] flex gap-2 items-center">
+           <span className='text-[18px]'>Cart</span> <p className='text-[#2972A5] text-[14px]'>({totalCount > 0 && <>{totalCount} items</>})</p>
           </div>
           <button onClick={onClose}>
-            <XMarkIcon className="h-6 w-6 text-gray-600" />
+            <XMarkIcon className="h-6 w-6 text-[#194463]" />
           </button>
         </div>
 
         {/* Items */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {items.length === 0 ? (
-            <p className="text-center text-gray-500 mt-10">Your cart is empty.</p>
+            <p className="text-center text-[#2972A5] mt-10">Your cart is empty.</p>
           ) : (
             items.map(item => (
               <div
                 key={`${item.id}-${item.variantid}`} // stable composite key
-                className="flex items-center justify-between border-b-[1px] border-[#B39384] pb-6"
+                className="flex items-center justify-between border-b-[1px] border-[#2972A5] pb-6"
               >
 
                 <div className="flex items-center gap-3">
@@ -94,9 +94,9 @@ export default function CartDrawer({ open, onClose }) {
 
                   <div className='flex flex-col justify-between gap-3'>
 
-                    <p className="text-[#8C7367] font-[lato] text-[21px] font-[700] tracking-[0.5px] leading-[150%]">{item.name}</p>
+                    <p className="text-[#2972A5] font-[lato] text-[21px] font-[700] tracking-[0.5px] leading-[150%]">{item.name}</p>
                     {/* <p className="text-xs text-gray-500">Qty: {Number(item.qty) || 0}</p> */}
-                    <span className='text-[#2A3443] font-[lato] text-[21px] font-[700] tracking-[0.5px] leading-[150%]'>Rs.{item.price}</span>
+                    <span className='text-[#194463] font-[lato] text-[21px] font-[700] tracking-[0.5px] leading-[150%]'>Rs.{item.price}</span>
                     {/* <p className="text-xs text-gray-500">variationid:{item.variantid}</p> */}
 
 
@@ -105,9 +105,9 @@ export default function CartDrawer({ open, onClose }) {
 <div className='flex gap-2 items-center'>
 
 
-<span className='text-[#53443D] font-[lato] text-[16px tracking-[0.5px] leading-[150%]'>Qty</span>
+<span className='text-[#194463] font-[lato] text-[16px tracking-[0.5px] leading-[150%]'>Qty</span>
 
- <div className='border-[1px] rounded-[24px] border-[#53443D] w-full text-center'>
+ <div className='border-[1px] rounded-[24px] border-[#194463] w-full text-center'>
                   <div className='felx items-center justify-between w-full'>
                   {/* Decrement */}
                   <button
@@ -132,7 +132,7 @@ export default function CartDrawer({ open, onClose }) {
                   {/* Remove */}
                   <button
                     onClick={() => remove(item.cartid, item.id, item.variantid)}
-                    className="text-[#53443D] underline text-sm hover:underline"
+                    className="text-[#2972A5] underline text-sm hover:underline"
                   >
                     Remove
                   </button>
@@ -144,15 +144,6 @@ export default function CartDrawer({ open, onClose }) {
 
 
 </div>
-                 
-
-
-
-
-
-
-                  
-
 
 
                   </div>
@@ -168,7 +159,7 @@ export default function CartDrawer({ open, onClose }) {
         <div className="border-t px-6 py-6">
           <button
             onClick={goCheckout}
-            className="w-full py-3 bg-[#b49d91] text-white text-lg rounded-md hover:opacity-90 transition"
+            className="w-full py-3 bg-[#2972A5] text-white text-lg rounded-md hover:opacity-90 transition"
           >
             Checkout
           </button>

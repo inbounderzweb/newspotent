@@ -359,7 +359,7 @@ const handlePayClick = async (order_id) => {
         contact: res.customer?.phone ?? '',
       },
         
-      theme: { color: '#b49d91' },
+      theme: { color: '#194463' },
       handler: async (resp) => {
         try {
           const form = new FormData();
@@ -461,7 +461,7 @@ const handlePayClick = async (order_id) => {
   };
 
   const QtyBox = ({ value, onDec, onInc }) => (
-    <div className="flex items-center border border-[#6d5a52] rounded-[12px] px-4 py-2 text-[#6d5a52] text-sm">
+    <div className="flex items-center border border-[#194463] rounded-[12px] px-4 py-2 text-[#194463] text-sm">
       <button className="px-2 disabled:opacity-30" onClick={onDec} disabled={value <= 1}>
         <MinusIcon className="h-4 w-4" />
       </button>
@@ -474,25 +474,25 @@ const handlePayClick = async (order_id) => {
 
   const CloseBtn = ({ onClick }) => (
     <button onClick={onClick} className="absolute right-6 top-6 p-1 rounded-full hover:bg-gray-100" aria-label="close">
-      <XMarkIcon className="w-5 h-5 text-[#6d5a52]" />
+      <XMarkIcon className="w-5 h-5 text-[#194463]" />
     </button>
   );
 
   return (
     <div className="max-w-5xl mx-auto py-10 px-4">
-      <h1 className="text-4xl font-semibold mb-8 text-[#6d5a52]">Your Order</h1>
+      <h1 className="text-4xl font-semibold mb-8 text-[#194463]">Your Order</h1>
 
       {cartItems.length === 0 ? (
         <p className="text-center">
           Your cart is empty.&nbsp;
-          <button onClick={() => navigate('/shop')} className="underline text-blue-600">
+          <button onClick={() => navigate('/shop')} className="underline text-[#194463]">
             Continue Shopping
           </button>
         </p>
       ) : (
         <>
           {/* Header row */}
-          <div className="grid grid-cols-12 bg-[#eadcd5] text-[#6d5a52] rounded-md py-3 px-4 font-semibold mb-4 text-lg">
+          <div className="grid grid-cols-12 text-[#194463] rounded-md py-3 px-4 font-semibold mb-4 text-lg">
             <div className="col-span-7">product</div>
             <div className="col-span-3 text-center">QTY</div>
             <div className="col-span-2 text-right">Total</div>
@@ -507,11 +507,11 @@ const handlePayClick = async (order_id) => {
                   <img
                     src={`https://thenewspotent.com/manage/assets/uploads/${item.image}`}
                     alt={item.name}
-                    className="w-20 h-20 rounded-xl object-cover bg-[#f6ebe6]"
+                    className="w-20 h-20 rounded-xl object-cover"
                   />
                   <div>
-                    <p className="text-xl text-[#6d5a52] font-medium">{item.name}</p>
-                    <p className="text-[#2A3443] text-lg font-semibold">Rs.{item.price.toFixed(2)}/-</p>
+                    <p className="text-xl text-[#194463] font-medium">{item.name}</p>
+                    <p className="text-[#194463] text-lg font-semibold">Rs.{item.price.toFixed(2)}/-</p>
                   </div>
                 </div>
 
@@ -524,7 +524,7 @@ const handlePayClick = async (order_id) => {
                   />
                   <button
                     onClick={() => remove(item.cartid, item.id, item.variantid)}
-                    className="underline text-[#6d5a52] text-sm ml-4 md:hidden"
+                    className="underline text-[#194463] text-sm ml-4 md:hidden"
                   >
                     Remove
                   </button>
@@ -532,12 +532,12 @@ const handlePayClick = async (order_id) => {
 
                 {/* Total & Remove on md+ */}
                 <div className="flex justify-between md:justify-end md:col-span-2 items-center">
-                  <p className="text-[#2A3443] font-semibold text-lg">
+                  <p className="text-[#194463] font-semibold text-lg">
                     Rs.{(item.price * item.qty).toFixed(2)}/-
                   </p>
                   <button
                     onClick={() => remove(item.cartid, item.id, item.variantid)}
-                    className="underline text-[#6d5a52] text-sm hidden md:inline-block ml-4"
+                    className="underline text-[#194463] text-sm hidden md:inline-block ml-4"
                   >
                     Remove
                   </button>
@@ -549,15 +549,15 @@ const handlePayClick = async (order_id) => {
           </div>
 
           {/* Totals */}
-          <div className="mt-10 flex justify-end text-[#6d5a52]">
+          <div className="mt-10 flex justify-end text-[#194463]">
             <div className="w-1/2 max-w-sm space-y-2">
               <div className="flex justify-between">
                 <span className="text-base">Subtotal</span>
-                <span className="text-[#b49d91] font-semibold">
+                <span className="text-[#194463] font-semibold">
                   Rs.{subtotal.toFixed(2)}/-
                 </span>
               </div>
-              <div className="flex justify-between text-xl font-bold text-[#2A3443]">
+              <div className="flex justify-between text-xl font-bold text-[#194463]">
                 <span>Total</span>
                 <span>Rs.{total.toFixed(2)}/-</span>
               </div>
@@ -568,7 +568,7 @@ const handlePayClick = async (order_id) => {
           <div className="flex justify-center mt-10">
             <button
               onClick={handlePlaceOrder}
-              className="bg-[#1e2633] text-white text-lg px-16 py-4 rounded-xl hover:opacity-90 transition"
+              className="bg-[#194463] text-white text-lg px-16 py-4 rounded-xl hover:opacity-90 transition"
             >
               Place order
             </button>
@@ -589,19 +589,19 @@ const handlePayClick = async (order_id) => {
             {/* STEP: FORM */}
             {step === 'form' && (
               <>
-                <h2 className="text-3xl font-semibold text-[#6d5a52] mb-6">Enter Shipping Address</h2>
+                <h2 className="text-3xl font-semibold text-[#194463] mb-6">Enter Shipping Address</h2>
 
                 <button
                   onClick={handleUseLocation}
-                  className="mb-6 inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#eadcd5] text-[#6d5a52] hover:opacity-90"
+                  className="mb-6 inline-flex items-center gap-2 px-6 py-3 text-white rounded-xl bg-[#194463] hover:opacity-90"
                 >
                   <span className="material-icons text-base">my_location</span>
                   Use my Location
                 </button>
 
-                <hr className="mb-6 border-[#eadcd5]" />
+                <hr className="mb-6 border-[#194463]" />
 
-                <div className="grid grid-cols-2 gap-4 text-[#6d5a52]">
+                <div className="grid grid-cols-2 gap-4 text-[#194463]">
                   {[
                     ['street','Street'],
                     ['city','City'], ['pincode','Pincode'], ['district','District'],
@@ -614,7 +614,7 @@ const handlePayClick = async (order_id) => {
                         name={k}
                         value={form[k]}
                         onChange={handleChange}
-                        className="border border-[#b49d91] rounded-xl px-4 py-2 bg-transparent placeholder:text-[#d2bfb7]"
+                        className="border border-[#194463] rounded-xl px-4 py-2 bg-transparent"
                         placeholder={l}
                       />
                     </div>
@@ -626,7 +626,7 @@ const handlePayClick = async (order_id) => {
                 <div className="mt-10 flex justify-end gap-4">
                   <button
                     onClick={handleCancel}
-                    className="px-10 py-3 rounded-xl border border-[#6d5a52] text-[#6d5a52]"
+                    className="px-10 py-3 rounded-xl border border-[#194463] text-[#194463]"
                     disabled={loading}
                   >
                     Back
@@ -651,7 +651,7 @@ const handlePayClick = async (order_id) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Shipping */}
                   <div>
-                    <h3 className="text-xl font-semibold text-[#6d5a52] bg-[#eadcd5] px-4 py-2 rounded-md inline-block mb-4">
+                    <h3 className="text-xl font-semibold text-[#194463] px-4 py-2 rounded-md inline-block mb-4">
                       Shipping Address
                     </h3>
                     <div className="space-y-4 max-h-60 overflow-y-auto pr-2">
@@ -659,8 +659,8 @@ const handlePayClick = async (order_id) => {
                         <label
                           key={a.id}
                           className={`block border rounded-2xl p-4 cursor-pointer text-sm leading-snug
-                            ${shippingId === a.id ? 'border-[#b49d91] bg-white' : 'border-[#d7c6bfd7] bg-[#f6ebe6]'}
-                            ${newAddrId === a.id ? 'ring-2 ring-[#b49d91]' : ''}`}
+                            ${shippingId === a.id ? 'border-[#194463] bg-white' : 'border-[#194463] bg-white'}
+                            ${newAddrId === a.id ? 'ring-2 ring-[#194463]' : ''}`}
                         >
                           <div className="flex items-start gap-3">
                             <input
@@ -685,7 +685,7 @@ const handlePayClick = async (order_id) => {
                     </div>
                     <button
                       onClick={() => { setStep('form'); setNewAddrId(null); }}
-                      className="mt-6 w-full bg-[#eadcd5] text-[#6d5a52] py-4 rounded-2xl flex items-center justify-center gap-2"
+                      className="mt-6 w-full bg-white text-[#194463] py-4 rounded-2xl flex items-center justify-center gap-2"
                     >
                       <span className="text-xl">+</span> Add New
                     </button>
@@ -693,13 +693,13 @@ const handlePayClick = async (order_id) => {
 
                   {/* Billing */}
                   <div>
-                    <h3 className="text-xl font-semibold text-[#6d5a52] bg-[#eadcd5] px-4 py-2 rounded-md inline-block mb-4">
+                    <h3 className="text-xl font-semibold text-[#194463] px-4 py-2 rounded-md inline-block mb-4">
                       Billing Address
                     </h3>
-                    <label className="flex items-center gap-2 text-sm text-[#6d5a52] mb-4">
+                    <label className="flex items-center gap-2 text-sm text-[#194463] mb-4">
                       <input
                         type="checkbox"
-                        className="accent-[#1e2633]"
+                        className="accent-[#194463]"
                         checked={sameAsShip}
                         onChange={(e) => {
                           setSameAsShip(e.target.checked);
@@ -714,13 +714,13 @@ const handlePayClick = async (order_id) => {
                           <label
                             key={a.id}
                             className={`block border rounded-2xl p-4 cursor-pointer text-sm leading-snug
-                              ${billingId === a.id ? 'border-[#b49d91] bg-white' : 'border-[#d7c6bfd7] bg-[#f6ebe6]'}
-                              ${newAddrId === a.id ? 'ring-2 ring-[#b49d91]' : ''}`}
+                              ${billingId === a.id ? 'border-[#194463] bg-white' : 'border-[#194463]'}
+                              ${newAddrId === a.id ? 'ring-2 ring-[#194463]' : ''}`}
                           >
                             <div className="flex items-start gap-3">
                               <input
                                 type="radio"
-                                className="mt-1 accent-[#1e2633]"
+                                className="mt-1 accent-[#194463]"
                                 name="billing"
                                 checked={billingId === a.id}
                                 onChange={() => setBillingId(a.id)}
@@ -738,25 +738,25 @@ const handlePayClick = async (order_id) => {
                     )}
                     <button
                       onClick={() => { setStep('form'); setNewAddrId(null); }}
-                      className="mt-6 w-full bg-[#eadcd5] text-[#6d5a52] py-4 rounded-2xl flex items-center justify-center gap-2"
+                      className="mt-6 w-full  text-[#194463] py-4 rounded-2xl flex items-center justify-center gap-2"
                     >
                       <span className="text-xl">+</span> Add New
                     </button>
                   </div>
                 </div>
 
-                <hr className="my-8 border-[#eadcd5]" />
+                <hr className="my-8 border-[#194463]" />
 
                 <div className="grid justify-between lg:flex items-center">
                   {/* Delivery method */}
                   <div className="flex items-center gap-3 m-2">
-                    <h4 className="text-20px lg:text-xl font-semibold text-[#6d5a52]">
+                    <h4 className="text-20px lg:text-xl font-semibold text-[#194463]">
                       Delivery Method
                     </h4>
                     <select
                       value={deliveryMethod}
                       onChange={(e) => setDeliveryMethod(Number(e.target.value))}
-                      className="border border-[#6d5a52] rounded-xl px-6 py-3 text-[#6d5a52] bg-transparent"
+                      className="border border-[#194463] rounded-xl px-6 py-3 text-[#194463] bg-transparent"
                     >
                       <option value={1}>Standard</option>
                       <option value={2}>Express</option>
@@ -766,7 +766,7 @@ const handlePayClick = async (order_id) => {
                   <div className="flex gap-3 m-2 ml-[-10px] lg:ml-0 float-start lg:float-end justify-between">
                     <button
                       onClick={handleCancel}
-                      className="px-12 py-3 rounded-xl border border-[#6d5a52] text-[#6d5a52]"
+                      className="px-12 py-3 rounded-xl border border-[#194463] text-[#194463]"
                     >
                       Back
                     </button>
@@ -784,11 +784,11 @@ const handlePayClick = async (order_id) => {
             {/* STEP: CONFIRM */}
             {step === 'confirm' && (
               <>
-                <h2 className="text-3xl font-semibold text-[#6d5a52] mb-8">Confirm your Order</h2>
+                <h2 className="text-3xl font-semibold text-[#194463] mb-8">Confirm your Order</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {/* Products list */}
                   <div>
-                    <div className="bg-[#eadcd5] text-[#6d5a52] rounded-md py-3 px-4 font-semibold mb-4 text-lg">
+                    <div className=" text-[#194463] rounded-md py-3 px-4 font-semibold mb-4 text-lg">
                       product
                     </div>
                     <div className="max-h-72 overflow-y-auto pr-2 space-y-6">
@@ -812,12 +812,12 @@ const handlePayClick = async (order_id) => {
 
                   {/* Address + totals */}
                   <div>
-                    <div className="bg-[#eadcd5] text-[#6d5a52] rounded-md py-3 px-4 font-semibold mb-4 text-lg">
+                    <div className=" text-[#194463] rounded-md py-3 px-4 font-semibold mb-4 text-lg">
                       Address
                     </div>
-                    <label className="block border border-[#b49d91] rounded-2xl p-4 text-sm leading-snug text-[#6d5a52] mb-8">
+                    <label className="block border border-[#194463] rounded-2xl p-4 text-sm leading-snug text-[#194463] mb-8">
                       <div className="flex items-start gap-3">
-                        <input type="radio" className="mt-1 accent-[#1e2633]" checked readOnly />
+                        <input type="radio" className="mt-1 accent-[#194463]" checked readOnly />
                         <div>
                           {addrLabel(addresses.find(a => a.id === shippingId))}
                           {shippingId && billingId && (
@@ -842,10 +842,10 @@ const handlePayClick = async (order_id) => {
                         </div>
                       </div>
                     </label>
-                    <div className="space-y-2 text-[#6d5a52] mb-8">
+                    <div className="space-y-2 text-[#194463] mb-8">
                       <div className="flex justify-between text-base">
                         <span>Subtotal</span>
-                        <span className="text-[#b49d91] font-semibold">
+                        <span className="text-[#194463] font-semibold">
                           Rs.{subtotal.toFixed(2)}/-
                         </span>
                       </div>
@@ -862,13 +862,13 @@ const handlePayClick = async (order_id) => {
                 <div className="flex justify-end gap-4 mt-6">
                   <button
                     onClick={() => setStep('select')}
-                    className="px-12 py-3 rounded-xl border border-[#6d5a52] text-[#6d5a52]"
+                    className="px-12 py-3 rounded-xl border border-[#194463] text-[#194463]"
                   >
                     Back
                   </button>
                   <button
                     onClick={handleCheckout}
-                    className="px-12 py-3 rounded-xl bg-[#1e2633] text-white hover:opacity-90"
+                    className="px-12 py-3 rounded-xl bg-[#194463] text-white hover:opacity-90"
                     disabled={loading}
                   >
                     {loading ? 'Processing…' : 'Proceed to Checkout'}
@@ -878,7 +878,7 @@ const handlePayClick = async (order_id) => {
                 <div className="flex justify-end gap-4 mt-6">
                   <button
                     onClick={() => setStep('select')}
-                    className="px-12 py-3 rounded-xl border border-[#6d5a52] text-[#6d5a52]"
+                    className="px-12 py-3 rounded-xl border border-[#194463] text-[#194463]"
                   >
                     Back
                   </button>
