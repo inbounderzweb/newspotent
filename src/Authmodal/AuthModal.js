@@ -276,11 +276,11 @@ export default function AuthModal({ open, onClose }) {
           <XMarkIcon className="w-5 h-5 text-gray-500"/>
         </button>
         {/* Icon */}
-        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-[#b49d91] text-white rounded-full p-3 shadow-md">
+        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-[#194463] text-white rounded-full p-3 shadow-md">
           <LockClosedIcon className="w-6 h-6"/>
         </div>
         {/* Title */}
-        <h2 className="text-center text-xl font-semibold text-[#2A3443] mb-6">
+        <h2 className="text-center text-xl font-semibold text-[#194463] mb-6">
           {tab==='login'   ? 'Sign In'
           : tab==='register'? 'Create Account'
           : tab==='otp'     ? 'Enter OTP'
@@ -290,14 +290,14 @@ export default function AuthModal({ open, onClose }) {
         {/* Back link */}
         {tab!=='login' && tab!=='otp' && (
           <button
-            className="mb-4 text-xs text-[#b49d91] hover:underline"
+            className="mb-4 text-xs text-[#194463] hover:underline"
             onClick={()=>setTab('login')}
           >← Back to Login</button>
         )}
 
         {/* Method toggle */}
         {['login','register','reset'].includes(tab) && (
-          <div className="flex mb-5 rounded-lg overflow-hidden border border-[#eadcd5]">
+          <div className="flex mb-5 rounded-lg overflow-hidden border border-[#194463]">
             <ToggleBtn
               active={authMethod==='email'}
               onClick={()=>{
@@ -335,14 +335,14 @@ export default function AuthModal({ open, onClose }) {
                 </>
             }
 
-            <p className="text-xs text-center text-[#b49d91] cursor-pointer mb-3" onClick={()=>setUsePwd(p=>!p)}>
+            <p className="text-xs text-center text-[#194463] cursor-pointer mb-3" onClick={()=>setUsePwd(p=>!p)}>
               {usePassword ? 'Use OTP instead' : 'Use password instead'}
             </p>
 
             <div className="text-center space-y-1 text-xs">
-              <p className="text-[#b49d91] cursor-pointer" onClick={()=>setTab('reset')}>Forgot password?</p>
+              <p className="text-[#194463] cursor-pointer" onClick={()=>setTab('reset')}>Forgot password?</p>
               <p>Don’t have an account?{' '}
-                <span className="text-[#b49d91] cursor-pointer underline" onClick={()=>setTab('register')}>Sign up</span>
+                <span className="text-[#194463] cursor-pointer underline" onClick={()=>setTab('register')}>Sign up</span>
               </p>
             </div>
           </div>
@@ -367,13 +367,13 @@ export default function AuthModal({ open, onClose }) {
   <div>
     {/* ← Back to Login */}
     <button
-      className="mb-4 text-xs text-[#b49d91] hover:underline"
+      className="mb-4 text-xs text-[#194463] hover:underline"
       onClick={() => setTab('login')}
     >
       ←  Login
     </button>
 
-    <p className="text-center text-xs text-gray-500 mb-4">Enter the 6-digit code</p>
+    <p className="text-center text-xs text-[#194463] mb-4">Enter the 6-digit code</p>
     <div className="flex justify-between mb-6">
       {otpDigits.map((d,i) => (
         <input
@@ -382,7 +382,7 @@ export default function AuthModal({ open, onClose }) {
           value={d}
           ref={el => otpRefs.current[i] = el}
           onChange={e => handleOtpField(e, i)}
-          className="w-10 h-10 border border-[#eadcd5] text-center rounded focus:ring-1 focus:ring-[#b49d91]"
+          className="w-10 h-10 border border-[#194463] text-center rounded focus:ring-1 focus:ring-[#194463]"
         />
       ))}
     </div>
@@ -412,11 +412,11 @@ export default function AuthModal({ open, onClose }) {
 
 /* UI helpers */
 const Input = props => (
-  <input {...props} className="w-full p-3 mb-4 border border-[#eadcd5] rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#b49d91]" />
+  <input {...props} className="w-full p-3 mb-4 border border-[#194463] rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#194463]" />
 );
 const PrimaryBtn = ({ onClick, label }) => (
-  <button onClick={onClick} className="w-full p-3 bg-[#b49d91] text-white rounded-lg text-sm hover:opacity-90 mb-4">{label}</button>
+  <button onClick={onClick} className="w-full p-3 bg-[#194463] text-white rounded-lg text-sm hover:opacity-90 mb-4">{label}</button>
 );
 const ToggleBtn = ({ active, onClick, icon, label }) => (
-  <button onClick={onClick} className={`flex-1 flex items-center justify-center gap-1 py-2 text-xs ${active?'bg-[#b49d91] text-white':'bg-white text-[#6d5a52]'}`}>{icon}<span>{label}</span></button>
+  <button onClick={onClick} className={`flex-1 flex items-center justify-center gap-1 py-2 text-xs ${active?'bg-[#194463] text-white':'bg-white text-[#194463]'}`}>{icon}<span>{label}</span></button>
 );
