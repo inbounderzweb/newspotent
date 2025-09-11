@@ -1,5 +1,5 @@
 // src/components/ProductList.js
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import qs from 'qs';
@@ -11,7 +11,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import Spinner from '../../components/loader/Spinner';
 
-const API_BASE = 'https://ikonixperfumer.com/beta/api';
+const API_BASE = 'https://thenewspotent.com/manage/api';
 
 // --- Guest cart helpers here match CartContext’s format & sanitation ---
 const readGuest = () => {
@@ -100,20 +100,22 @@ export default function ProductList() {
 
   const products = data?.data || [];
 
-  // Build category filters
-  const categoryList = useMemo(
-    () => [...new Set(products.map(p => p.category_name))],
-    [products]
-  );
-  const filters = ['Our Bestsellers', ...categoryList];
-  const [selectedCategory, setSelectedCategory] = useState(filters[0]);
-  const filtered = useMemo(
-    () =>
-      selectedCategory === 'Our Bestsellers'
-        ? products
-        : products.filter(p => p.category_name === selectedCategory),
-    [selectedCategory, products]
-  );
+  // ---- Best Sellers only (no filter UI) ----
+  const isBestSeller = (p) => {
+    const tagHit =
+      Array.isArray(p.tags) &&
+      p.tags.some(t => String(t).toLowerCase().includes('best'));
+    const catHit = String(p.category_name || '').toLowerCase().includes('best');
+    return Boolean(
+      p.is_bestseller || p.best_seller || p.bestseller || p.isBestSeller || p.bestSeller || tagHit || catHit
+    );
+  };
+
+  const bestSellers = useMemo(() => {
+    const picks = products.filter(isBestSeller);
+    // Fallback: if API doesn’t mark bestsellers yet, show first 8 to avoid empty UI.
+    return picks.length ? picks : products.slice(0, 8);
+  }, [products]);
 
   const saveGuestCart = product => {
     const current = readGuest();
@@ -162,6 +164,7 @@ export default function ProductList() {
           },
         }
       );
+
       if (resp?.success) {
         alert(`${product.name} added to cart`);
         await syncGuestCartWithServer(user.id, token);
@@ -185,33 +188,25 @@ export default function ProductList() {
       {/* kick off token validation */}
       <ValidateOnLoad />
 
-      <section className="mx-auto w-[90%] md:w-[75%] py-8">
-        {/* Filter Pills */}
-        <div className="flex gap-4 mb-6 overflow-x-auto scrollbar-hide pb-4">
-          {filters.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`
-                px-4 py-2 rounded-full flex-shrink-0 transition
-                ${selectedCategory === cat
-                  ? 'bg-[#b49d91] text-white'
-                  : 'bg-white text-[#b49d91] border border-[#b49d91]'}
-              `}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
+<div className='font-[manrope] text-[#256795] text-[25px] leading-[120%] tracking-[0.5px] mx-auto w-full text-center my-5'>Products</div>
+<div className='mx-auto w-[80%] lg:w-[50%] text-center text-[#000] text-[manrope] font-[400] pb-5 text-[16px] leading-[170%] tracking-[0.5px]'>
+  <span>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod 
+tincidunt ut laoreet dolore magna aliquam erat volutpat.</span>
+</div>
+<div className="h-[220px] bg-[#34552B] rounded-[24px] mx-auto w-[90%] md:w-[75%] py-8"></div>
 
-        {/* Products Grid/List */}
+
+      <section className="mx-auto w-[90%] md:w-[75%] py-8">
+        {/* 🔥 Removed filter pills completely */}
+
+        {/* Products Grid/List — Best Sellers only */}
         <div
           className="
             flex flex-row gap-6 overflow-x-auto pb-4
             sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:overflow-visible sm:pb-0
           "
         >
-          {filtered.map(product => {
+          {bestSellers.map(product => {
             const variant = product.variants?.[0] || {};
             const vid     = variant.vid;
             const msrp    = Number(variant.price)      || 0;
@@ -222,53 +217,72 @@ export default function ProductList() {
                 key={`${product.id}-${vid}`}
                 className="min-w-[80%] lg:min-w-[60%] sm:min-w-0 relative overflow-hidden rounded-[10px]"
               >
-                {/* Category badge */}
-                <span className="absolute top-2 left-2 inline-block rounded-full border border-[#8C7367] px-3 py-1 text-xs text-[#8C7367]">
-                  {product.category_name}
-                </span>
+                {/* Category badge (optional) */}
+                {/* {product.category_name && (
+                  <span className="absolute top-2 left-2 inline-block rounded-full border border-[#8C7367] px-3 py-1 text-xs text-[#8C7367]">
+                    {product.category_name}
+                  </span>
+                )} */}
 
                 {/* Add-to-cart button */}
-                <button
+                {/* <button
                   onClick={e => {
                     e.stopPropagation();
                     handleAddToCart(product);
                   }}
                   className="absolute top-2 right-2 rounded-full p-1"
                 >
-                  <img src={bag} alt="cart" className="h-6 w-6" />
-                </button>
+                  <img src={bag} alt="cart" className="" />
+                </button> */}
 
                 {/* Product Image */}
-                <img
+
+
+<div className='p-2 bg-white rounded-[8px]'>
+
+ <img
                   onClick={() =>
                     navigate('/product-details', {
                       state: { product, vid },
                     })
                   }
-                  src={`https://ikonixperfumer.com/beta/assets/uploads/${product.image}`}
+                  src={`https://thenewspotent.com/manage/assets/uploads/${product.image}`}
                   alt={product.name}
-                  className="w-full h-72 object-cover cursor-pointer"
+                  className="w-full object-cover cursor-pointer rounded-[8px]"
                 />
 
                 {/* Info */}
-                <div className="pt-4 flex justify-between items-start">
+                <div className="pt-4">
                   <div>
-                    <h3 className="text-[#2A3443] font-[Lato] text-[16px] leading-snug">
+                    <h3 className="text-[#2A3443] font-[manrope] text-[16px] leading-[170%] tracking-[0.5px] text-center">
                       {product.name}
                     </h3>
-                    <p className="text-[#2A3443] font-[Lato] text-[14px]">
-                      {product.category_name}
-                    </p>
+                    {/* {product.category_name && (
+                      <p className="text-[#2A3443] font-[Lato] text-[14px]">
+                        {product.category_name}
+                      </p>
+                    )} */}
                   </div>
-                  <div className="text-right">
-                    {sale < msrp && (
+                  <div className="text-center">
+                    {/* {sale < msrp && (
                       <span className="text-xs line-through text-[#2A3443] font-[Lato] block">
                         ₹{msrp}/-
                       </span>
-                    )}
-                    <span className="font-semibold text-[#2A3443]">₹{sale}/-</span>
+                    )} */}
+                    <span className="font-normal leading-[170%] tracking-[0.5px] text-[18px] text-[#2972A5]">₹{sale}/-</span>
+                    <br/>
+                       <button className='text-center w-full lg:w-[50%] mx-auto justify-center items-center bg-[#2972A5] text-white py-2 rounded-full mt-2'  onClick={() =>
+                    navigate('/product-details', {
+                      state: { product, vid },
+                    })
+                  }>View Product</button>
                   </div>
                 </div>
+
+</div>
+
+
+
               </div>
             );
           })}
@@ -278,7 +292,7 @@ export default function ProductList() {
         <div className="flex justify-center mt-8">
           <button
             onClick={() => navigate('/shop')}
-            className="px-6 py-2 bg-[#b49d91] text-white rounded-full hover:opacity-90 transition"
+            className="px-6 py-2 text-[#0E283A] rounded-full border-[1px] border-[#0E283A]"
           >
             View all Products
           </button>

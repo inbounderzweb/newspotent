@@ -19,7 +19,7 @@ export default function UserProfile() {
   const handleLogout = () => {
     localStorage.removeItem('authUser');
     setUser(null);
-    setToken('');
+    // setToken('');
     navigate('/');
   };
 
@@ -89,10 +89,10 @@ export default function UserProfile() {
         </div>
 
         {/* Quick links */}
-        <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-4">
           <QuickLink to="/orders" title="My Orders" />
           <QuickLink to="/addresses" title="My Addresses" />
-          <QuickLink to="/wishlist" title="My Wishlist" />
+          {/* <QuickLink to="/wishlist" title="My Wishlist" /> */}
         </div>
       </div>
     </div>

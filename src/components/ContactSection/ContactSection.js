@@ -28,17 +28,17 @@ function ContactSection() {
                    <input
                 type="text"
                 placeholder="Full Name"
-                className="w-full bg-[#BDD3E3] my-1 placeholder-blue-400 rounded-lg py-2 px-4 focus:outline-none"
+                className="w-full bg-[#BDD3E3] my-1 placeholder-[#2972A5] rounded-lg py-2 px-4 focus:outline-none"
               />
               <input
                 type="tel"
                 placeholder="Phone Number"
-                className="w-full bg-[#BDD3E3] my-1 placeholder-blue-400 rounded-lg py-2 px-4 focus:outline-none"
+                className="w-full bg-[#BDD3E3] my-1 placeholder-[#2972A5] rounded-lg py-2 px-4 focus:outline-none"
               />
               <input
                 type="email"
                 placeholder="Mail id"
-                className="w-full bg-[#BDD3E3] my-1 placeholder-blue-400 rounded-lg py-2 px-4 focus:outline-none"
+                className="w-full bg-[#BDD3E3] my-1 placeholder-[#2972A5] rounded-lg py-2 px-4 focus:outline-none"
               />
                 </div>
               
@@ -47,11 +47,11 @@ function ContactSection() {
                         <textarea
               placeholder="Message / Comment"
               rows={4}
-              className="w-full bg-[#BDD3E3] placeholder-blue-400 rounded-lg py-[20.5px] px-4 focus:outline-none"
+              className="w-full bg-[#BDD3E3] placeholder-[#2972A5] rounded-lg py-[20.5px] px-4 focus:outline-none"
             />
               <button
                 type="submit"
-                className="bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 transition mx-auto text-center align-middle justify-center flex"
+                className="bg-[#2972A5] text-white px-16 py-3 rounded-full transition mx-auto text-center align-middle justify-center flex"
               >
                 Submit
               </button>

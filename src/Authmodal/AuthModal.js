@@ -11,7 +11,7 @@ import {
   DevicePhoneMobileIcon,
 } from '@heroicons/react/24/outline';
 
-const API_BASE = 'https://ikonixperfumer.com/beta/api';
+const API_BASE = 'https://thenewspotent.com/manage/api';
 
 export default function AuthModal({ open, onClose }) {
   const [tab, setTab]            = useState('register');    // 'login' | 'register' | 'otp' | 'reset'
@@ -292,7 +292,7 @@ export default function AuthModal({ open, onClose }) {
           <button
             className="mb-4 text-xs text-[#b49d91] hover:underline"
             onClick={()=>setTab('login')}
-          >← Login</button>
+          >← Back to Login</button>
         )}
 
         {/* Method toggle */}

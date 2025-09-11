@@ -10,7 +10,7 @@ export default function AppLayout() {
   const fetchToken = async () => {
     try {
       const response = await axios.post(
-        'https://ikonixperfumer.com/beta/api/validate',
+        'https://thenewspotent.com/manage/api/validate',
         qs.stringify({
           email: 'api@ikonix.com',
           password: 'dvu1Fl]ZmiRoYlx5',

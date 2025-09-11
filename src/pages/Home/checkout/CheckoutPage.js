@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import qs from 'qs';
+import loadRazorpay from '../../../utils/loadRazorpay';
 import {
   XMarkIcon,
   PlusIcon,
@@ -13,8 +14,14 @@ import { useAuth } from '../../../context/AuthContext';
 import { useCart } from '../../../context/CartContext';
 import AuthModal from '../../../Authmodal/AuthModal';
 
-const API_BASE = 'https://ikonixperfumer.com/beta/api';
+const API_BASE = 'https://thenewspotent.com/manage/api';
 
+/**
+ * Checkout Page
+ * - Creates internal order via /checkout
+ * - Creates Razorpay order via /payment/create-order
+ * - Opens Razorpay Checkout and verifies via /payment
+ */
 export default function CheckoutPage() {
   const { user, token } = useAuth();
   const navigate = useNavigate();
@@ -39,7 +46,7 @@ export default function CheckoutPage() {
     return () => document.removeEventListener('visibilitychange', onVis);
   }, [refresh]);
 
-  /* Totals */
+  /* Totals (rupees) */
   const subtotal = cartItems.reduce((s, i) => s + i.price * i.qty, 0);
   const total = subtotal;
 
@@ -51,9 +58,9 @@ export default function CheckoutPage() {
 
   /* Address state */
   const [form, setForm] = useState({
-    doorno: '', house: '', street: '', city: '',
+    street: '', city: '',
     pincode: '', district: '', state: '', country: '',
-    company: '', gst: '', type: ''
+    
   });
   const [addresses, setAddresses] = useState([]);
   const [shippingId, setShippingId] = useState(null);
@@ -83,12 +90,12 @@ export default function CheckoutPage() {
     deflt: a.deflt,
   });
 
-  const addrLabel = (a) =>
+  const addrLabel = (a = {}) =>
     [a.doorno, a.house, a.street, a.city, a.district, a.state, a.country, a.pincode]
       .filter(Boolean)
       .join(', ');
 
-  // ←─── helper to push the selected address to the top
+  // helper to push the selected address to the top
   const ordered = (list, selectedId) => {
     const first = list.find(a => a.id === selectedId);
     const rest  = list.filter(a => a.id !== selectedId);
@@ -132,9 +139,9 @@ export default function CheckoutPage() {
 
   const fetchDefaultAddresses = async () => {
     try {
-      const payload = qs.stringify({ userid: user.id, address_id: 1 });
+      const payload = qs.stringify({ userid: user.id });
       const { data } = await axios.post(
-        `${API_BASE}/address/default`,
+        `${API_BASE}/address`,
         payload,
         {
           headers: {
@@ -219,7 +226,7 @@ export default function CheckoutPage() {
 
   const handleAddAddress = async () => {
     for (let k of Object.keys(form)) {
-      if (!form[k].trim()) {
+      if (!String(form[k] ?? '').trim()) {
         setError(`Please fill in ${k}`);
         return;
       }
@@ -290,6 +297,115 @@ export default function CheckoutPage() {
     setStep('confirm');
   };
 
+  // ---------------------------
+  // Razorpay Pay Click Handler
+  // ---------------------------
+const handlePayClick = async (order_id) => {
+  try {
+    if (!order_id) throw new Error('Missing internal order id');
+    setError('');
+    setLoading(true);
+
+    const payload = qs.stringify({
+      order_id,
+      userid: user?.id,
+      client_hint_amount: Math.round(Number(total)), // paise hint (server must recompute)
+      receipt: `ikonix_${order_id}`,
+      notes: JSON.stringify({ source: 'web', cart: cartItems.length }),
+    });
+
+    const { data: raw } = await axios.post(
+      `${API_BASE}/payment/create-order`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      }
+    );
+
+    // Normalize your API shape
+    const res = raw?.data ?? raw ?? {};
+
+    // Use the SAME key as the server's mode/account
+    const keyId = 'rzp_test_R8MrWyxyABfzGy';
+
+    // Must be a Razorpay order id like "order_***"
+    const rzpOrderId = res.porder_id;
+
+    if (!keyId || !/^rzp_(test|live)_/.test(String(keyId))) {
+      console.error('Create-order response:', res);
+      throw new Error('Invalid Razorpay keyId from create-order');
+    }
+    if (!rzpOrderId || !String(rzpOrderId).startsWith('order_')) {
+      console.error('Create-order response:', res);
+      throw new Error('Invalid Razorpay order id from create-order');
+    }
+
+    // Load SDK & open checkout
+    await loadRazorpay();
+    if (!window.Razorpay) throw new Error('Razorpay SDK not available');
+
+    const rzp = new window.Razorpay({
+      key: keyId,            // DO NOT hard-code; must match the server's mode
+      order_id: rzpOrderId,  // must be order_****
+      name: 'Ikonix Perfumer',
+      description: 'Order Payment',
+      image: '/favicon.ico',
+      prefill: {
+        name:    res.customer?.name  ?? user?.name  ?? '',
+        email:   res.customer?.email ?? user?.email ?? '',
+        contact: res.customer?.phone ?? '',
+      },
+        
+      theme: { color: '#b49d91' },
+      handler: async (resp) => {
+        try {
+          const form = new FormData();
+          form.append('userid', String(user.id));
+          form.append('order_id', String(order_id));              // your internal id
+          form.append('porder_id', resp.razorpay_order_id);       // Razorpay order_****
+          form.append('payment_id', resp.razorpay_payment_id);
+          form.append('signature', resp.razorpay_signature);
+
+          const verifyRes = await fetch(`${API_BASE}/payment/callback`, {
+            method: 'POST',
+            headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+            body: form,
+          });
+          const result = await verifyRes.json().catch(() => ({}));
+        
+          if (!verifyRes.ok || result?.status === false) {
+            throw new Error(result?.message || 'Signature verification failed');
+          }
+          
+          // console.log(result,'finalout')
+
+        } catch (err) {
+          setError(err.message || 'Payment verification failed');
+          alert(err)
+        } finally {
+          setLoading(false);
+          navigate('/order-confirmation')
+        }
+      },
+      modal: { ondismiss: () => {setLoading(false); navigate('/');} }, 
+    });
+
+    rzp.on('payment.failed', (resp) => {
+      setLoading(false);
+      setError(resp?.error?.description || 'Payment failed');
+    });
+
+    rzp.open();
+  } catch (e) {
+    setLoading(false);
+    setError(e.message || 'Unable to start payment');
+  }
+};
+
+
   const handleCheckout = async () => {
     const billId = sameAsShip ? shippingId : billingId;
     try {
@@ -321,9 +437,10 @@ export default function CheckoutPage() {
         data = second.data;
       }
       if (data?.status === true) {
-        navigate('/order-confirmation', {
-          state: { order: data, address_id: shippingId },
-        });
+        // After internal order created, launch payment
+        setShowAddressModal(false);
+        // navigate('/payment-landing')
+        handlePayClick(data.order_id);
       } else {
         setError(data?.message || 'Checkout failed, please try again');
       }
@@ -331,6 +448,8 @@ export default function CheckoutPage() {
       setError('Checkout failed, please try again');
     } finally {
       setLoading(false);
+      
+
     }
   };
 
@@ -386,7 +505,7 @@ export default function CheckoutPage() {
                 {/* Product */}
                 <div className="flex items-center gap-4 md:col-span-7">
                   <img
-                    src={`https://ikonixperfumer.com/beta/assets/uploads/${item.image}`}
+                    src={`https://thenewspotent.com/manage/assets/uploads/${item.image}`}
                     alt={item.name}
                     className="w-20 h-20 rounded-xl object-cover bg-[#f6ebe6]"
                   />
@@ -484,10 +603,10 @@ export default function CheckoutPage() {
 
                 <div className="grid grid-cols-2 gap-4 text-[#6d5a52]">
                   {[
-                    ['doorno','Door No'], ['house','House'], ['street','Street'],
+                    ['street','Street'],
                     ['city','City'], ['pincode','Pincode'], ['district','District'],
-                    ['state','State'], ['country','Country'], ['company','Company'],
-                    ['gst','GST'], ['type','Type'],
+                    ['state','State'], ['country','Country'],
+                   
                   ].map(([k, l]) => (
                     <div key={k} className="flex flex-col gap-1">
                       <label className="text-sm">{l}</label>
@@ -676,7 +795,7 @@ export default function CheckoutPage() {
                       {cartItems.map((item) => (
                         <div key={item.cartid} className="flex gap-4">
                           <img
-                            src={`https://ikonixperfumer.com/beta/assets/uploads/${item.image}`}
+                            src={`https://thenewspotent.com/manage/assets/uploads/${item.image}`}
                             alt={item.name}
                             className="w-16 h-16 rounded-xl object-cover bg-[#f6ebe6]"
                           />
@@ -700,13 +819,12 @@ export default function CheckoutPage() {
                       <div className="flex items-start gap-3">
                         <input type="radio" className="mt-1 accent-[#1e2633]" checked readOnly />
                         <div>
-                          {addrLabel(addresses.find(a => a.id === shippingId) || {})}
+                          {addrLabel(addresses.find(a => a.id === shippingId))}
                           {shippingId && billingId && (
                             <>
                               {addresses.find(a => a.id === shippingId)?.company && (
                                 <div>
-                                  Company:{' '}
-                                  {addresses.find(a => a.id === shippingId)?.company}
+                                  Company: {addresses.find(a => a.id === shippingId)?.company}
                                 </div>
                               )}
                               {addresses.find(a => a.id === shippingId)?.gst && (
@@ -716,8 +834,7 @@ export default function CheckoutPage() {
                               )}
                               {addresses.find(a => a.id === shippingId)?.type && (
                                 <div>
-                                  Type:{' '}
-                                  {addresses.find(a => a.id === shippingId)?.type}
+                                  Type: {addresses.find(a => a.id === shippingId)?.type}
                                 </div>
                               )}
                             </>
@@ -739,7 +856,9 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                 </div>
+
                 {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+
                 <div className="flex justify-end gap-4 mt-6">
                   <button
                     onClick={() => setStep('select')}
@@ -753,6 +872,15 @@ export default function CheckoutPage() {
                     disabled={loading}
                   >
                     {loading ? 'Processing…' : 'Proceed to Checkout'}
+                  </button>
+                </div>
+
+                <div className="flex justify-end gap-4 mt-6">
+                  <button
+                    onClick={() => setStep('select')}
+                    className="px-12 py-3 rounded-xl border border-[#6d5a52] text-[#6d5a52]"
+                  >
+                    Back
                   </button>
                 </div>
               </>

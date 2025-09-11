@@ -188,7 +188,7 @@ export default function SearchModal({ open, onClose, onSubmit = () => {}, onPick
                   }`}
                 >
                   <img
-                    src={`https://ikonixperfumer.com/beta/assets/uploads/${imgSrc}`}
+                    src={`https://thenewspotent.com/manage/assets/uploads/${imgSrc}`}
                     alt={p.name}
                     className="w-12 h-12 object-cover rounded-md flex-shrink-0"
                   />

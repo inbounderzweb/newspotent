@@ -6,7 +6,7 @@ const fetchAuthToken = () => localStorage.getItem('authToken');
 
 // 1️⃣ Create your raw baseQuery
 const rawBaseQuery = fetchBaseQuery({
-  baseUrl: 'https://ikonixperfumer.com/beta/api/',
+  baseUrl: 'https://thenewspotent.com/manage/api',
   prepareHeaders: (headers) => {
     const token = fetchAuthToken();
     if (token) {

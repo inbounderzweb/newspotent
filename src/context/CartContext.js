@@ -11,7 +11,7 @@ import axios from 'axios';
 import qs from 'qs';
 import { useAuth } from './AuthContext';
 
-const API_BASE = 'https://ikonixperfumer.com/beta/api';
+const API_BASE = 'https://thenewspotent.com/manage/api';
 const CartContext = createContext();
 
 export function CartProvider({ children }) {

@@ -83,5 +83,7 @@ color: white;
    .animate-fadeIn { animation: fadeIn .25s ease-out; }
   
   
-
+.no-scrollbar{
+  background-color: transparent;
+}
    

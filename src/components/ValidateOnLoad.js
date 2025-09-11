@@ -4,7 +4,7 @@ import axios from 'axios';
 import qs from 'qs';
 import { useAuth } from '../context/AuthContext';
 
-const VALIDATE_URL = 'https://ikonixperfumer.com/beta/api/validate';
+const VALIDATE_URL = 'https://thenewspotent.com/manage/api/validate';
 const ONE_DAY_MS   = 24 * 60 * 60 * 1000;
 const MAX_RETRIES  = 5;
 const RETRY_DELAY  = 500; // ms between initial retry attempts
@@ -18,8 +18,8 @@ export default function ValidateOnLoad() {
       const { data } = await axios.post(
         VALIDATE_URL,
         qs.stringify({
-          email:    'api@ikonix.com',
-          password: 'dvu1Fl]ZmiRoYlx5',
+          email: 'api@thenewspotent.com',
+          password: 'r42clmPq@BZAQ9Gs',
         }),
         { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
       );

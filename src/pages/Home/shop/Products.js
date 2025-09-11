@@ -12,7 +12,7 @@ import perfume from '../../../assets/perfume.svg';
 import { useAuth } from '../../../context/AuthContext';
 import { useCart } from '../../../context/CartContext';
 
-const API_BASE = 'https://ikonixperfumer.com/beta/api';
+const API_BASE = 'https://thenewspotent.com/manage/api';
 
 const FILTERS = [
   'Our Bestsellers',

@@ -154,6 +154,8 @@ export default function BestSeller() {
 
   return (
     <section className="pt-[40px] w-full">
+                  <h1 className="text-[#256795] font-manrope text-[25px] text-center mb-5">Best Seller</h1>
+
       <div className="mx-auto ml-4 md:ml-auto flex w-[90%] flex-col relative gap-6 md:flex-row md:items-start md:justify-between">
         {/* Left — Illustration */}
         <img
@@ -166,8 +168,8 @@ export default function BestSeller() {
         <div className="pointer-events-none z-10 absolute top-[22.3rem] right-0 w-full h-40 flex lg:hidden bg-gradient-to-t from-[#c8a997] via-[#c8a997]/80 to-transparent" />
 
         {/* Right — Carousel */}
+        
         <div className="relative ml-auto w-full overflow-hidden md:flex-1 md:pl-4 mt-[-4rem] lg:mt-0 z-20 pb-[56px]">
-            <h1 className="text-[#256795] font-manrope text-[25px]">Best Seller</h1>
           <Slider ref={sliderRef} {...settings}>
             {products.map((product) => {
               const variant = product.variants?.[0] || {};
@@ -177,64 +179,48 @@ export default function BestSeller() {
 
               return (
                 <div key={`${product.id}-${vid}`} className="px-2">
-                  <div className="rounded-xl shadow-lg overflow-hidden flex flex-col relative bg-white">
-                    {/* Category badge */}
-                    <span className="absolute top-2 left-2 inline-block rounded-full border border-[#8C7367] px-3 py-1 text-xs text-[#8C7367] bg-white/90">
-                      {product.category_name}
-                    </span>
+                 <div className='p-2 bg-white rounded-[8px]'>
 
-                    {/* Add-to-cart */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAddToCart(product);
-                      }}
-                      className="absolute top-2 right-2 rounded-full p-2 bg-white/90 shadow"
-                      aria-label="Add to cart"
-                      title="Add to cart"
-                    >
-                      <ShoppingBagIcon className="h-5 w-5 text-[#2A3443]" />
-                    </button>
+ <img
+                  onClick={() =>
+                    navigate('/product-details', {
+                      state: { product, vid },
+                    })
+                  }
+                  src={`https://thenewspotent.com/manage/assets/uploads/${product.image}`}
+                  alt={product.name}
+                  className="w-full object-cover cursor-pointer rounded-[8px]"
+                />
 
-                    {/* Product Image */}
-                    <img
-                      onClick={() =>
-                        navigate("/product-details", {
-                          state: { product, vid },
-                        })
-                      }
-                      src={`https://ikonixperfumer.com/beta/assets/uploads/${product.image}`}
-                      alt={product.name}
-                      className="w-full h-72 object-cover cursor-pointer"
-                    />
-
-                    {/* Info */}
-                    <div className="text-center grid gap-3 my-5 px-3">
-                      <h3 className="text-[#2A3443] font-[Lato] text-[16px] leading-snug">
-                        {product.name}
-                      </h3>
-
-                      <div className="flex items-center justify-center gap-2">
-                        {sale < msrp && (
-                          <span className="text-sm line-through text-[#2A3443]/60">
-                            ₹{msrp}/-
-                          </span>
-                        )}
-                        <span className="font-semibold text-[#2A3443]">
-                          ₹{sale}/-
-                        </span>
-                      </div>
-
-                      <button
-                        onClick={() =>
-                          navigate("/product-details", { state: { product, vid } })
-                        }
-                        className="bg-[#2972A5] py-2 px-4 text-white text-[16px] mx-10 rounded-[24px]"
-                      >
-                        View Product
-                      </button>
-                    </div>
+                {/* Info */}
+                <div className="pt-4">
+                  <div>
+                    <h3 className="text-[#2A3443] font-[manrope] text-[16px] leading-[170%] tracking-[0.5px] text-center">
+                      {product.name}
+                    </h3>
+                    {/* {product.category_name && (
+                      <p className="text-[#2A3443] font-[Lato] text-[14px]">
+                        {product.category_name}
+                      </p>
+                    )} */}
                   </div>
+                  <div className="text-center">
+                    {/* {sale < msrp && (
+                      <span className="text-xs line-through text-[#2A3443] font-[Lato] block">
+                        ₹{msrp}/-
+                      </span>
+                    )} */}
+                    <span className="font-normal leading-[170%] tracking-[0.5px] text-[18px] text-[#2972A5]">₹{sale}/-</span>
+                    <br/>
+                       <button className='text-center w-full lg:w-[50%] mx-auto justify-center items-center bg-[#2972A5] text-white py-2 rounded-full mt-2'  onClick={() =>
+                    navigate('/product-details', {
+                      state: { product, vid },
+                    })
+                  }>View Product</button>
+                  </div>
+                </div>
+
+</div>
                 </div>
               );
             })}

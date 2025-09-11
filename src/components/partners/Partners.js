@@ -6,9 +6,9 @@ function Partners() {
   ];
 
   return (
-    <div className="bg-[#dcecf6] py-10 relative overflow-hidden">
+    <div className="bg-[#dcecf6] pb-10 relative overflow-hidden">
       {/* Title */}
-      <h2 className="text-center text-2xl font-semibold text-blue-700 mb-8">
+      <h2 className="text-[#256795] font-manrope text-[25px] text-center pb-5">
         Our Partners
       </h2>
 
@@ -21,7 +21,7 @@ function Partners() {
         {logos.map((logo, index) => (
           <div
             key={index}
-            className="min-w-[120px] h-20 bg-blue-700 text-white flex items-center justify-center rounded-lg"
+            className="min-w-[120px] h-12 bg-[#215B84] text-white flex items-center justify-center rounded-lg"
           >
             {logo}
           </div>
@@ -30,7 +30,7 @@ function Partners() {
         {logos.map((logo, index) => (
           <div
             key={index + logos.length}
-            className="min-w-[120px] h-20 bg-blue-700 text-white flex items-center justify-center rounded-lg"
+            className="min-w-[120px] h-12 bg-[#215B84] text-white flex items-center justify-center rounded-lg"
           >
             {logo}
           </div>

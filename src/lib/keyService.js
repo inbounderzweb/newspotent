@@ -10,10 +10,10 @@ export default function ValidateOnLoad() {
   const fetchToken = async () => {
     try {
       const response = await axios.post(
-        'https://ikonixperfumer.com/beta/api/validate',
+        'https://thenewspotent.com/manage/api/validate',
         qs.stringify({
-          email: 'api@ikonix.com',
-          password: 'dvu1Fl]ZmiRoYlx5',
+          email: 'api@thenewspotent.com',
+          password: 'r42clmPq@BZAQ9Gs',
         }),
         {
           headers: {

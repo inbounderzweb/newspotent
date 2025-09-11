@@ -16,14 +16,14 @@ export default function TwoSliders() {
   ];
 
   return (
-    <div className="bg-blue-50 py-12 flex flex-col lg:flex-row gap-6 items-center justify-center px-4">
+    <div className=" pt-8 flex flex-col lg:flex-row gap-6 items-center justify-center mx-auto w-[90%] md:w-[75%]">
       {/* Always visible on all screen sizes */}
-      <div className="w-full max-w-lg">
+      <div className="w-full">
         <Slider slides={redSlides} />
       </div>
 
       {/* Hidden on mobile; shown from sm: (≥640px) upwards */}
-      <div className="hidden sm:block w-full max-w-lg">
+      <div className="hidden sm:block w-full">
         <Slider slides={blueSlides} />
       </div>
     </div>
