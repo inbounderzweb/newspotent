@@ -99,12 +99,7 @@ export default function CartDrawer({ open, onClose }) {
                     <span className='text-[#194463] font-[lato] text-[21px] font-[700] tracking-[0.5px] leading-[150%]'>Rs.{item.price}</span>
                     {/* <p className="text-xs text-gray-500">variationid:{item.variantid}</p> */}
 
-
-
-
 <div className='flex gap-2 items-center'>
-
-
 <span className='text-[#194463] font-[lato] text-[16px tracking-[0.5px] leading-[150%]'>Qty</span>
 
  <div className='border-[1px] rounded-[24px] border-[#194463] w-full text-center'>

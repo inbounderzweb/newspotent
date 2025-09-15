@@ -93,6 +93,16 @@ export default function Header() {
           <div className="flex items-center gap-5">
             {/* Desktop icons */}
             <div className="items-center gap-5 hidden lg:flex">
+
+            <li className="cursor-pointer flex gap-2">
+            <a href="https://forms.gle/Fx4KRjcdXFjPcGeR8"><span className="text-xs mt-1 block text-black">Quiz</span></a>
+          </li>
+            <li className="cursor-pointer flex gap-2">
+            <span className="text-xs mt-1 block text-black">Quiz-2</span>
+          </li>
+
+
+
               <img
                 src={profile}
                 alt="Profile"
