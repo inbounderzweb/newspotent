@@ -238,48 +238,45 @@ tincidunt ut laoreet dolore magna aliquam erat volutpat.</span>
                 {/* Product Image */}
 
 
-<div className='p-2 bg-white rounded-[8px]'>
+<div className="p-2 bg-white rounded-[8px] flex flex-col h-full">
+  <img
+    onClick={() =>
+      navigate('/product-details', {
+        state: { product, vid },
+      })
+    }
+    src={`https://thenewspotent.com/manage/assets/uploads/${product.image}`}
+    alt={product.name}
+    className="w-full object-cover cursor-pointer rounded-[8px] h-64" // fixed height for images
+  />
 
- <img
-                  onClick={() =>
-                    navigate('/product-details', {
-                      state: { product, vid },
-                    })
-                  }
-                  src={`https://thenewspotent.com/manage/assets/uploads/${product.image}`}
-                  alt={product.name}
-                  className="w-full object-cover cursor-pointer rounded-[8px]"
-                />
+  {/* Info */}
+  <div className="pt-4 flex flex-col flex-grow justify-between">
+    <div>
+      <h3 className="text-[#2A3443] font-[manrope] text-[16px] leading-[170%] tracking-[0.5px] text-center line-clamp-2">
+        {product.name}
+      </h3>
+    </div>
 
-                {/* Info */}
-                <div className="pt-4">
-                  <div>
-                    <h3 className="text-[#2A3443] font-[manrope] text-[16px] leading-[170%] tracking-[0.5px] text-center">
-                      {product.name}
-                    </h3>
-                    {/* {product.category_name && (
-                      <p className="text-[#2A3443] font-[Lato] text-[14px]">
-                        {product.category_name}
-                      </p>
-                    )} */}
-                  </div>
-                  <div className="text-center">
-                    {/* {sale < msrp && (
-                      <span className="text-xs line-through text-[#2A3443] font-[Lato] block">
-                        ₹{msrp}/-
-                      </span>
-                    )} */}
-                    <span className="font-normal leading-[170%] tracking-[0.5px] text-[18px] text-[#2972A5]">₹{sale}/-</span>
-                    <br/>
-                       <button className='text-center w-full lg:w-[50%] mx-auto justify-center items-center bg-[#2972A5] text-white py-2 rounded-full mt-2'  onClick={() =>
-                    navigate('/product-details', {
-                      state: { product, vid },
-                    })
-                  }>View Product</button>
-                  </div>
-                </div>
-
+    <div className="text-center mt-4">
+      <span className="font-normal leading-[170%] tracking-[0.5px] text-[18px] text-[#2972A5]">
+        ₹{sale}/-
+      </span>
+      <br />
+      <button
+        className="text-center w-full lg:w-[50%] mx-auto justify-center items-center bg-[#2972A5] text-white py-2 rounded-full mt-2"
+        onClick={() =>
+          navigate('/product-details', {
+            state: { product, vid },
+          })
+        }
+      >
+        View Product
+      </button>
+    </div>
+  </div>
 </div>
+
 
 
 

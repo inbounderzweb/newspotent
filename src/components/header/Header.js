@@ -97,9 +97,9 @@ export default function Header() {
             <li className="cursor-pointer flex gap-2">
             <a href="https://forms.gle/Fx4KRjcdXFjPcGeR8"><span className="text-xs mt-1 block text-black">Quiz</span></a>
           </li>
-            <li className="cursor-pointer flex gap-2">
+            {/* <li className="cursor-pointer flex gap-2">
             <span className="text-xs mt-1 block text-black">Quiz-2</span>
-          </li>
+          </li> */}
 
 
 

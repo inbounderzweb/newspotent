@@ -85,7 +85,10 @@ export default function AuthModal({ open, onClose }) {
       }
     } catch (e) {
       console.error(e);
-      alert(e.response?.data?.message || 'Error sending OTP');
+      console.log(e.response.data.message);
+    if (e.response && e.response.data && e.response.data.message) {
+    alert(e.response.data.message);
+}
     }
   };
 
@@ -110,7 +113,10 @@ export default function AuthModal({ open, onClose }) {
       await finalizeLogin(data);
     } catch (e) {
       console.error(e);
-      alert('Network error during password login');
+      console.log(e.response.data.message);
+      if (e.response && e.response.data && e.response.data.message) {
+    alert(e.response.data.message);
+}
     }
   };
 
@@ -138,7 +144,10 @@ export default function AuthModal({ open, onClose }) {
       }
     } catch (e) {
       console.error(e);
-      alert('Network error during reset request');
+      console.log(e.response.data.message);
+     if (e.response && e.response.data && e.response.data.message) {
+    alert(e.response.data.message);
+}
     }
   };
 
@@ -167,7 +176,10 @@ export default function AuthModal({ open, onClose }) {
         }
       } catch (e) {
         console.error(e);
-        alert('Server error on reset verify');
+        console.log(e.response.data.message);
+      if (e.response && e.response.data && e.response.data.message) {
+    alert(e.response.data.message);
+}
       }
       return;
     }

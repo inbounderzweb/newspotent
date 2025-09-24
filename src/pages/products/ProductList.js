@@ -13,6 +13,32 @@ import Spinner from '../../components/loader/Spinner';
 
 const API_BASE = 'https://thenewspotent.com/manage/api';
 
+// --- validate key helpers (same logic as product page) ---
+const VALIDATE_KEY_STORAGE = 'validate_key';
+const getStoredValidateKey = () => {
+  try { return localStorage.getItem(VALIDATE_KEY_STORAGE) || ''; } catch { return ''; }
+};
+const getEnvValidateKey = () => {
+  const vite = (typeof import.meta !== 'undefined' && import.meta?.env?.VITE_VALIDATE_KEY) || undefined;
+  const cra  = (typeof process !== 'undefined' && process?.env?.REACT_APP_VALIDATE_KEY) || undefined;
+  return vite || cra || '';
+};
+const getValidateKey = () => getStoredValidateKey() || getEnvValidateKey() || '';
+
+// Slugify and include id at the end so deep links are guaranteed to resolve
+const slugify = (s='') =>
+  String(s)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+
+const buildProductPath = (product) => {
+  const slug = product?.slug || product?.seo_slug || slugify(product?.name || '');
+  // attach -<id> so ProductDetails can always extract the numeric id if backend lacks slug endpoint
+  const safeSlug = slug ? `${slug}-${product.id}` : String(product.id);
+  return `/product/${safeSlug}`;
+};
+
 // --- Guest cart helpers here match CartContext’s format & sanitation ---
 const readGuest = () => {
   const raw = JSON.parse(localStorage.getItem('guestCart') || '[]');
@@ -28,12 +54,7 @@ const readGuest = () => {
   for (const it of normalized) {
     const key = `${it.id}::${it.vid}`;
     const prev = byKey.get(key);
-    byKey.set(
-      key,
-      prev
-        ? { ...it, qty: (Number(prev.qty) || 0) + (Number(it.qty) || 0) }
-        : it
-    );
+    byKey.set(key, prev ? { ...it, qty: (Number(prev.qty) || 0) + (Number(it.qty) || 0) } : it);
   }
   return Array.from(byKey.values());
 };
@@ -86,17 +107,9 @@ export default function ProductList() {
     isLoading,
     isError,
     refetch,
-  } = useGetProductsQuery(
-    undefined,
-    { skip: !isTokenReady }
-  );
+  } = useGetProductsQuery(undefined, { skip: !isTokenReady });
 
-  // ▶︎ Once token lands, retry the fetch
-  useEffect(() => {
-    if (isTokenReady) {
-      refetch();
-    }
-  }, [isTokenReady, refetch]);
+  useEffect(() => { if (isTokenReady) refetch(); }, [isTokenReady, refetch]);
 
   const products = data?.data || [];
 
@@ -113,7 +126,6 @@ export default function ProductList() {
 
   const bestSellers = useMemo(() => {
     const picks = products.filter(isBestSeller);
-    // Fallback: if API doesn’t mark bestsellers yet, show first 8 to avoid empty UI.
     return picks.length ? picks : products.slice(0, 8);
   }, [products]);
 
@@ -124,9 +136,8 @@ export default function ProductList() {
     const price   = Number(variant.sale_price || variant.price || 0) || 0;
 
     const idx = current.findIndex(i => i.id === product.id && i.vid === vid);
-    if (idx > -1) {
-      current[idx].qty = (Number(current[idx].qty) || 0) + 1;
-    } else {
+    if (idx > -1) current[idx].qty = (Number(current[idx].qty) || 0) + 1;
+    else {
       current.push({
         id:    product.id,
         vid,
@@ -141,7 +152,6 @@ export default function ProductList() {
     refresh();
   };
 
-  // Add to cart handler
   const handleAddToCart = async product => {
     if (!token || !user) {
       saveGuestCart(product);
@@ -178,30 +188,35 @@ export default function ProductList() {
     }
   };
 
-  if (isLoading) return <p className="text-center py-8">
-    <Spinner/>
-  </p>;
+  // Build deep link with ?k= and optional ?vid=
+  const goToDetails = (product) => {
+    const path = buildProductPath(product);
+    const variant = product.variants?.[0] || {};
+    const vidPart = variant?.vid ? `&vid=${encodeURIComponent(variant.vid)}` : '';
+    const key = getValidateKey();
+    const q = key ? `?k=${encodeURIComponent(key)}${vidPart}` : (vidPart ? `?${vidPart.slice(1)}` : '');
+    navigate(`${path}${q}`, {
+      // keep state as a performance hint for instant paint (not required to render)
+      state: { product, vid: variant?.vid },
+    });
+  };
+
+  if (isLoading) return <p className="text-center py-8"><Spinner/></p>;
   if (isError)   return <p className="text-center py-8">Error loading products..</p>;
 
   return (
     <>
-      {/* kick off token validation */}
+      {/* token validation (as you already had) */}
       <ValidateOnLoad />
 
-<div className='font-[manrope] text-[#256795] text-[25px] leading-[120%] tracking-[0.5px] mx-auto w-full text-center my-5'>Products</div>
-<div className='mx-auto w-[80%] lg:w-[50%] text-center text-[#000] text-[manrope] font-[400] pb-5 text-[16px] leading-[170%] tracking-[0.5px]'>
-  <span>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod 
-tincidunt ut laoreet dolore magna aliquam erat volutpat.</span>
-</div>
-<div className="h-[220px] bg-[#34552B] rounded-[24px] mx-auto w-[90%] md:w-[75%] py-8"></div>
-
+      <div className='font-[manrope] text-[#256795] text-[25px] leading-[120%] tracking-[0.5px] mx-auto w-full text-center my-5'>Products</div>
+      <div className='mx-auto w-[80%] lg:w-[50%] text-center text-[#000] text-[manrope] font-[400] pb-5 text-[16px] leading-[170%] tracking-[0.5px]'>
+        <span>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.</span>
+      </div>
+      <div className="h-[220px] bg-[#34552B] rounded-[24px] mx-auto w-[90%] md:w-[75%] py-8"></div>
 
       <section className="mx-auto w-[90%] md:w-[75%] py-8">
-        {/* 🔥 Removed filter pills completely */}
-
-        {/* Products Grid/List — Best Sellers only */}
-        <div
-          className="
+        <div className="
             flex flex-row gap-6 overflow-x-auto pb-4
             sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:overflow-visible sm:pb-0
           "
@@ -217,72 +232,36 @@ tincidunt ut laoreet dolore magna aliquam erat volutpat.</span>
                 key={`${product.id}-${vid}`}
                 className="min-w-[80%] lg:min-w-[60%] sm:min-w-0 relative overflow-hidden rounded-[10px]"
               >
-                {/* Category badge (optional) */}
-                {/* {product.category_name && (
-                  <span className="absolute top-2 left-2 inline-block rounded-full border border-[#8C7367] px-3 py-1 text-xs text-[#8C7367]">
-                    {product.category_name}
-                  </span>
-                )} */}
+                <div className="p-2 bg-white rounded-[8px] flex flex-col h-full">
+                  <img
+                    onClick={() => goToDetails(product)}
+                    src={`https://thenewspotent.com/manage/assets/uploads/${product.image}`}
+                    alt={product.name}
+                    className="w-full object-cover cursor-pointer rounded-[8px] h-64"
+                  />
 
-                {/* Add-to-cart button */}
-                {/* <button
-                  onClick={e => {
-                    e.stopPropagation();
-                    handleAddToCart(product);
-                  }}
-                  className="absolute top-2 right-2 rounded-full p-1"
-                >
-                  <img src={bag} alt="cart" className="" />
-                </button> */}
+                  {/* Info */}
+                  <div className="pt-4 flex flex-col flex-grow justify-between">
+                    <div>
+                      <h3 className="text-[#2A3443] font-[manrope] text-[16px] leading-[170%] tracking-[0.5px] text-center line-clamp-2">
+                        {product.name}
+                      </h3>
+                    </div>
 
-                {/* Product Image */}
-
-
-<div className='p-2 bg-white rounded-[8px]'>
-
- <img
-                  onClick={() =>
-                    navigate('/product-details', {
-                      state: { product, vid },
-                    })
-                  }
-                  src={`https://thenewspotent.com/manage/assets/uploads/${product.image}`}
-                  alt={product.name}
-                  className="w-full object-cover cursor-pointer rounded-[8px]"
-                />
-
-                {/* Info */}
-                <div className="pt-4">
-                  <div>
-                    <h3 className="text-[#2A3443] font-[manrope] text-[16px] leading-[170%] tracking-[0.5px] text-center">
-                      {product.name}
-                    </h3>
-                    {/* {product.category_name && (
-                      <p className="text-[#2A3443] font-[Lato] text-[14px]">
-                        {product.category_name}
-                      </p>
-                    )} */}
-                  </div>
-                  <div className="text-center">
-                    {/* {sale < msrp && (
-                      <span className="text-xs line-through text-[#2A3443] font-[Lato] block">
-                        ₹{msrp}/-
+                    <div className="text-center mt-4">
+                      <span className="font-normal leading-[170%] tracking-[0.5px] text-[18px] text-[#2972A5]">
+                        ₹{sale}/-
                       </span>
-                    )} */}
-                    <span className="font-normal leading-[170%] tracking-[0.5px] text-[18px] text-[#2972A5]">₹{sale}/-</span>
-                    <br/>
-                       <button className='text-center w-full lg:w-[50%] mx-auto justify-center items-center bg-[#2972A5] text-white py-2 rounded-full mt-2'  onClick={() =>
-                    navigate('/product-details', {
-                      state: { product, vid },
-                    })
-                  }>View Product</button>
+                      <br />
+                      <button
+                        className="text-center w-full lg:w-[50%] mx-auto justify-center items-center bg-[#2972A5] text-white py-2 rounded-full mt-2"
+                        onClick={() => goToDetails(product)}
+                      >
+                        View Product
+                      </button>
+                    </div>
                   </div>
                 </div>
-
-</div>
-
-
-
               </div>
             );
           })}

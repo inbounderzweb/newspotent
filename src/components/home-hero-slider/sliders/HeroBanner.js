@@ -5,12 +5,12 @@ import mobileHero from '../../../assets/hero-mobile.svg';
 import YouTube from 'react-youtube';
 
 const HOTSPOTS_MOBILE = [
-  { id: 'news-1', top: '5.5%', left: '18%', width: '18%', height: '15%', videoId: '1bH_ukYn81c' },
+  { id: 'news-1', top: '5.5%', left: '18%', width: '18%', height: '15%', videoId: 'ZNRSHr3b4uA' },
   { id: 'news-2', top: '7%', left: '42%', width: '30%', height: '14%', videoId: 'IFlXeFwA_2A' },
 ];
 
 const HOTSPOTS_DESKTOP = [
-  { id: 'news-1', top: '33.5%', left: '6.5%', width: '7.5%', height: '22%', videoId: '1bH_ukYn81c' },
+  { id: 'news-1', top: '33.5%', left: '6.5%', width: '7.5%', height: '22%', videoId: 'ZNRSHr3b4uA' },
   { id: 'news-2', top: '37.5%', left: '16%', width: '13%', height: '18%', videoId: 'IFlXeFwA_2A' },
 ];
 
@@ -29,7 +29,7 @@ const VIDEO_AREA_DESKTOP = {
 };
 
 const VIDEO_CONTROLLERS = [
-  { id: 'adds', text: 'Adds', videoId: 'IFlXeFwA_2A' },
+  { id: 'adds', text: 'Adds', videoId: 'ZNRSHr3b4uA' },
   { id: 'reels', text: 'Reels', videoId: '1bH_ukYn81c' },
   { id: 'thenewspotenttv', text: 'The Newspotent TV', videoId: '1bH_ukYn81c' },
 ];

@@ -166,7 +166,7 @@ export default function Shop() {
           <div className="w-full h-[220px] rounded-[10px] bg-[#194463] text-white flex items-center p-6 mb-8">
 
 
-         <div className='flex w-[50%] items-center mx-auto gap-5 justify-between'>
+         <div className='grid grid-cols-1 lg:flex w-[100%] lg:w-[50%] items-center mx-auto gap-5 justify-between'>
             <img src={galleryico} alt='gallery-icon'/>
             <p className='font-[manrope] text-[13px] tracking-[0.5px]'>Helping Students Step Beyond the Classroom—The Smartest Student Companion for Quick News, Knowledge, and Confidence!</p>
          </div>

@@ -17,6 +17,7 @@ import B2bProducts from '../products/B2bProducts'
 import Apparels from '../products/Apparels'
 import BestSeller from '../products/BestSeller'
 import Brand from '../products/Brand'
+import Students from '../../components/students/Students'
 
 
 function Home() {
@@ -39,6 +40,7 @@ function Home() {
          <div><Apparels/></div>
          <div><BestSeller /></div>
          <div><Brand /></div>
+         <div><Students /></div>
         {/* <div><SpecialDealsSlider /></div> */}
         {/* <div><OwnPerfume /></div>
         <div><UspSection /></div>
