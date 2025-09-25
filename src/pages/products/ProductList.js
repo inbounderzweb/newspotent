@@ -3,7 +3,6 @@ import React, { useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import qs from 'qs';
-import bag from '../../assets/bag.svg';
 import ValidateOnLoad from '../../components/ValidateOnLoad';
 
 import { useGetProductsQuery } from '../../features/product/productApi';
@@ -13,7 +12,7 @@ import Spinner from '../../components/loader/Spinner';
 
 const API_BASE = 'https://thenewspotent.com/manage/api';
 
-// --- validate key helpers (same logic as product page) ---
+// --- validate key helpers ---
 const VALIDATE_KEY_STORAGE = 'validate_key';
 const getStoredValidateKey = () => {
   try { return localStorage.getItem(VALIDATE_KEY_STORAGE) || ''; } catch { return ''; }
@@ -25,89 +24,65 @@ const getEnvValidateKey = () => {
 };
 const getValidateKey = () => getStoredValidateKey() || getEnvValidateKey() || '';
 
-// Slugify and include id at the end so deep links are guaranteed to resolve
+// Slugify and include id
 const slugify = (s='') =>
-  String(s)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
-
+  String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 const buildProductPath = (product) => {
   const slug = product?.slug || product?.seo_slug || slugify(product?.name || '');
-  // attach -<id> so ProductDetails can always extract the numeric id if backend lacks slug endpoint
   const safeSlug = slug ? `${slug}-${product.id}` : String(product.id);
   return `/product/${safeSlug}`;
 };
 
-// --- Guest cart helpers here match CartContext’s format & sanitation ---
+// ----------------- Guest cart helpers (match CartContext) -----------------
+const stableKey = (id, variantid) => `${String(id)}::${String(variantid ?? '')}`;
+
 const readGuest = () => {
-  const raw = JSON.parse(localStorage.getItem('guestCart') || '[]');
+  let raw = [];
+  try { raw = JSON.parse(localStorage.getItem('guestCart') || '[]'); } catch {}
   const normalized = (Array.isArray(raw) ? raw : []).map(x => ({
     id:    x.productid ?? x.id,
-    vid:   x.variantid ?? x.vid,
-    name:  x.name,
-    image: x.image,
+    vid:   x.variantid ?? x.vid ?? null,
+    name:  x.name ?? '',
+    image: x.image ?? '',
     price: Number(x.price) || 0,
-    qty:   Number(x.qty)   || 1,
+    qty:   Math.max(1, Number(x.qty) || 1),
   }));
   const byKey = new Map();
   for (const it of normalized) {
-    const key = `${it.id}::${it.vid}`;
+    const key = stableKey(it.id, it.vid);
     const prev = byKey.get(key);
     byKey.set(key, prev ? { ...it, qty: (Number(prev.qty) || 0) + (Number(it.qty) || 0) } : it);
   }
   return Array.from(byKey.values());
 };
 
-const writeGuest = arr => {
+const writeGuest = (arr) => {
   const safe = (Array.isArray(arr) ? arr : []).map(i => ({
     id:    i.id,
-    vid:   i.vid ?? i.variantid,
-    name:  i.name,
-    image: i.image,
+    vid:   i.vid ?? i.variantid ?? null,
+    name:  i.name ?? '',
+    image: i.image ?? '',
     price: Number(i.price) || 0,
-    qty:   Number(i.qty)   || 1,
+    qty:   Math.max(1, Number(i.qty) || 1),
   }));
   localStorage.setItem('guestCart', JSON.stringify(safe));
 };
 
-// Sync guest → server cart
-async function syncGuestCartWithServer(userId, token) {
-  const resp = await axios.post(
-    `${API_BASE}/cart`,
-    qs.stringify({ userid: userId }),
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    }
-  );
-  const items = resp.data?.data || [];
-  writeGuest(
-    items.map(it => ({
-      id:    it.id,
-      vid:   it.variantid ?? it.vid,
-      name:  it.name,
-      image: it.image,
-      price: Number(it.price) || 0,
-      qty:   Number(it.qty)   || 1,
-    }))
-  );
-}
-
 export default function ProductList() {
   const navigate = useNavigate();
   const { user, token, isTokenReady } = useAuth();
-  const { refresh } = useCart();
+  const { refresh, drainGuestToServer } = useCart();
 
-  // ▶︎ Fire the products request—but only after token is ready:
-  const {
-    data,
-    isLoading,
-    isError,
-    refetch,
-  } = useGetProductsQuery(undefined, { skip: !isTokenReady });
+  // If user logs in while on this page and guest has items, merge once.
+  useEffect(() => {
+    if (user && token && readGuest().length) {
+      drainGuestToServer();
+    }
+  }, [user, token, drainGuestToServer]);
+
+  // Fire the products request—but only after token readiness
+  const { data, isLoading, isError, refetch } =
+    useGetProductsQuery(undefined, { skip: !isTokenReady });
 
   useEffect(() => { if (isTokenReady) refetch(); }, [isTokenReady, refetch]);
 
@@ -132,41 +107,42 @@ export default function ProductList() {
   const saveGuestCart = product => {
     const current = readGuest();
     const variant = product.variants?.[0] || {};
-    const vid     = variant.vid;
+    const vid     = variant.vid ?? null;
     const price   = Number(variant.sale_price || variant.price || 0) || 0;
 
-    const idx = current.findIndex(i => i.id === product.id && i.vid === vid);
+    const key = stableKey(product.id, vid);
+    const idx = current.findIndex(i => stableKey(i.id, i.vid) === key);
     if (idx > -1) current[idx].qty = (Number(current[idx].qty) || 0) + 1;
     else {
       current.push({
         id:    product.id,
         vid,
-        name:  product.name,
-        image: product.image,
+        name:  product.name ?? '',
+        image: product.image ?? '',
         price,
         qty:   1,
       });
     }
     writeGuest(current);
-    alert(`${product.name} added to cart (guest)`);
-    refresh();
+    refresh(); // update drawer
   };
 
   const handleAddToCart = async product => {
+    const variant = product.variants?.[0] || {};
+    const vid = String(variant.vid ?? '');
+
+    // Guest path
     if (!token || !user) {
       saveGuestCart(product);
+      alert(`${product.name} added to cart (guest)`);
       return;
     }
-    const variant = product.variants?.[0] || {};
+
+    // Logged-in path
     try {
       const { data: resp } = await axios.post(
         `${API_BASE}/cart`,
-        qs.stringify({
-          userid:    user.id,
-          productid: product.id,
-          variantid: variant.vid,
-          qty:       1,
-        }),
+        qs.stringify({ userid: user.id, productid: product.id, variantid: vid, qty: 1 }),
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -175,10 +151,11 @@ export default function ProductList() {
         }
       );
 
-      if (resp?.success) {
+      if (resp?.success || resp?.status === true) {
+        // If there are leftover guest items, merge them now (idempotent)
+        if (readGuest().length) await drainGuestToServer();
+        await refresh();
         alert(`${product.name} added to cart`);
-        await syncGuestCartWithServer(user.id, token);
-        refresh();
       } else {
         alert(resp?.message || 'Failed to add to cart');
       }
@@ -195,10 +172,7 @@ export default function ProductList() {
     const vidPart = variant?.vid ? `&vid=${encodeURIComponent(variant.vid)}` : '';
     const key = getValidateKey();
     const q = key ? `?k=${encodeURIComponent(key)}${vidPart}` : (vidPart ? `?${vidPart.slice(1)}` : '');
-    navigate(`${path}${q}`, {
-      // keep state as a performance hint for instant paint (not required to render)
-      state: { product, vid: variant?.vid },
-    });
+    navigate(`${path}${q}`, { state: { product, vid: variant?.vid } });
   };
 
   if (isLoading) return <p className="text-center py-8"><Spinner/></p>;
@@ -206,7 +180,6 @@ export default function ProductList() {
 
   return (
     <>
-      {/* token validation (as you already had) */}
       <ValidateOnLoad />
 
       <div className='font-[manrope] text-[#256795] text-[25px] leading-[120%] tracking-[0.5px] mx-auto w-full text-center my-5'>Products</div>
@@ -223,13 +196,13 @@ export default function ProductList() {
         >
           {bestSellers.map(product => {
             const variant = product.variants?.[0] || {};
-            const vid     = variant.vid;
+            const vid     = variant.vid ?? null;
             const msrp    = Number(variant.price)      || 0;
             const sale    = Number(variant.sale_price) || msrp;
 
             return (
               <div
-                key={`${product.id}-${vid}`}
+                key={`${product.id}-${vid ?? ''}`}
                 className="min-w-[80%] lg:min-w-[60%] sm:min-w-0 relative overflow-hidden rounded-[10px]"
               >
                 <div className="p-2 bg-white rounded-[8px] flex flex-col h-full">
@@ -240,7 +213,6 @@ export default function ProductList() {
                     className="w-full object-cover cursor-pointer rounded-[8px] h-64"
                   />
 
-                  {/* Info */}
                   <div className="pt-4 flex flex-col flex-grow justify-between">
                     <div>
                       <h3 className="text-[#2A3443] font-[manrope] text-[16px] leading-[170%] tracking-[0.5px] text-center line-clamp-2">
@@ -255,10 +227,16 @@ export default function ProductList() {
                       <br />
                       <button
                         className="text-center w-full lg:w-[50%] mx-auto justify-center items-center bg-[#2972A5] text-white py-2 rounded-full mt-2"
+                        onClick={() => handleAddToCart(product)}
+                      >
+                        Add to Cart
+                      </button>
+                      {/* <button
+                        className="text-center w-full lg:w-[50%] mx-auto justify-center items-center border border-[#2972A5] text-[#2972A5] py-2 rounded-full mt-2"
                         onClick={() => goToDetails(product)}
                       >
                         View Product
-                      </button>
+                      </button> */}
                     </div>
                   </div>
                 </div>
@@ -267,7 +245,6 @@ export default function ProductList() {
           })}
         </div>
 
-        {/* View All */}
         <div className="flex justify-center mt-8">
           <button
             onClick={() => navigate('/shop')}

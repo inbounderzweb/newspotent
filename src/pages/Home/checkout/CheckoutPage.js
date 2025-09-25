@@ -15,7 +15,7 @@ import { useCart } from '../../../context/CartContext';
 import AuthModal from '../../../Authmodal/AuthModal';
 import Swal from 'sweetalert2';
 
-const API_BASE = 'https://thenewspotent.com/manage/api/';
+const API_BASE = 'https://thenewspotent.com/manage/api';
 
 /**
  * Checkout Page
@@ -38,6 +38,22 @@ export default function CheckoutPage() {
     clear,
   } = useCart();
 
+  // 🟢 NEW: ensure cart is hydrated immediately on mount (covers guest "Buy Now" navigation)
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => {
+    (async () => {
+      await refresh();             // loads guest items if not logged in, server items if logged in
+      setHydrated(true);
+    })();
+  }, [refresh]);
+
+  // Also re-hydrate if auth state changes (e.g., user logs in on this page)
+  useEffect(() => {
+    (async () => {
+      await refresh();
+    })();
+  }, [user, token, refresh]);
+
   // Refresh when tab becomes visible (lightweight, avoids double inits)
   useEffect(() => {
     const onVis = () => document.visibilityState === 'visible' && refresh();
@@ -46,7 +62,7 @@ export default function CheckoutPage() {
   }, [refresh]);
 
   /* Totals (rupees) */
-  const subtotal = cartItems.reduce((s, i) => s + i.price * i.qty, 0);
+  const subtotal = cartItems.reduce((s, i) => s + Number(i.price) * Number(i.qty), 0);
   const total = subtotal;
 
   /* Modals & steps */
@@ -323,13 +339,8 @@ export default function CheckoutPage() {
         }
       );
 
-      // Normalize your API shape
       const res = raw?.data ?? raw ?? {};
-
-      // Use the SAME key as the server's mode/account
-      const keyId = 'rzp_test_R8MrWyxyABfzGy';
-
-      // Must be a Razorpay order id like "order_***"
+      const keyId = 'rzp_test_RKWSDgtssopZSP';
       const rzpOrderId = res.porder_id;
 
       if (!keyId || !/^rzp_(test|live)_/.test(String(keyId))) {
@@ -341,7 +352,6 @@ export default function CheckoutPage() {
         throw new Error('Invalid Razorpay order id from create-order');
       }
 
-      // Load SDK & open checkout
       await loadRazorpay();
       if (!window.Razorpay) throw new Error('Razorpay SDK not available');
 
@@ -403,6 +413,7 @@ export default function CheckoutPage() {
     try {
       setLoading(true);
       setError('');
+      // Ensure server has items if user just logged in
       await ensureServerCartNotEmpty();
       const payload = qs.stringify({
         userid: user.id,
@@ -450,10 +461,10 @@ export default function CheckoutPage() {
 
   const QtyBox = ({ value, onDec, onInc }) => (
     <div className="flex items-center border border-[#6d5a52] rounded-[12px] px-4 py-2 text-[#6d5a52] text-sm">
-      <button className="px-2 disabled:opacity-30" onClick={onDec} disabled={value <= 1}>
+      <button className="px-2 disabled:opacity-30" onClick={onDec} disabled={Number(value) <= 1}>
         <MinusIcon className="h-4 w-4" />
       </button>
-      <span className="mx-3">{value}</span>
+      <span className="mx-3">{Number(value)}</span>
       <button className="px-2" onClick={onInc}>
         <PlusIcon className="h-4 w-4" />
       </button>
@@ -465,6 +476,16 @@ export default function CheckoutPage() {
       <XMarkIcon className="w-5 h-5 text-[#6d5a52]" />
     </button>
   );
+
+  // 🟢 NEW: avoid showing "empty cart" flash before first hydration completes
+  if (!hydrated) {
+    return (
+      <div className="max-w-5xl mx-auto py-10 px-4">
+        <h1 className="text-4xl font-semibold mb-8 text-[#194463]">Your Order</h1>
+        <p className="text-center">Loading your cart…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto py-10 px-4">
@@ -499,7 +520,7 @@ export default function CheckoutPage() {
                   />
                   <div>
                     <p className="text-xl text-[#194463] font-medium">{item.name}</p>
-                    <p className="text-[#194463] text-lg font-semibold">Rs.{item.price.toFixed(2)}/-</p>
+                    <p className="text-[#194463] text-lg font-semibold">Rs.{Number(item.price).toFixed(2)}/-</p>
                   </div>
                 </div>
 
@@ -521,7 +542,7 @@ export default function CheckoutPage() {
                 {/* Total & Remove on md+ */}
                 <div className="flex justify-between md:justify-end md:col-span-2 items-center">
                   <p className="text-[#194463] font-semibold text-lg">
-                    Rs.{(item.price * item.qty).toFixed(2)}/-
+                    Rs.{(Number(item.price) * Number(item.qty)).toFixed(2)}/-
                   </p>
                   <button
                     onClick={() => remove(item.cartid, item.id, item.variantid)}
@@ -789,7 +810,7 @@ export default function CheckoutPage() {
                           <div className="flex-1">
                             <p className="text-[#6d5a52] font-medium">{item.name}</p>
                             <p className="text-[#2A3443] font-semibold text-sm">
-                              Rs.{item.price.toFixed(2)}/-
+                              Rs.{Number(item.price).toFixed(2)}/-
                             </p>
                           </div>
                         </div>

@@ -148,6 +148,46 @@ export default function BestSeller() {
     responsive: [{ breakpoint: 1024, settings: { slidesToShow: 1 } }],
   };
 
+
+const VALIDATE_KEY_STORAGE = 'validate_key';
+const getStoredValidateKey = () => {
+  try { return localStorage.getItem(VALIDATE_KEY_STORAGE) || ''; } catch { return ''; }
+};
+const getEnvValidateKey = () => {
+  const vite = (typeof import.meta !== 'undefined' && import.meta?.env?.VITE_VALIDATE_KEY) || undefined;
+  const cra  = (typeof process !== 'undefined' && process?.env?.REACT_APP_VALIDATE_KEY) || undefined;
+  return vite || cra || '';
+};
+const getValidateKey = () => getStoredValidateKey() || getEnvValidateKey() || '';
+
+
+
+const slugify = (s='') =>
+  String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+const buildProductPath = (product) => {
+  const slug = product?.slug || product?.seo_slug || slugify(product?.name || '');
+  const safeSlug = slug ? `${slug}-${product.id}` : String(product.id);
+  return `/product/${safeSlug}`;
+};
+
+
+ // Build deep link with ?k= and optional ?vid=
+  const goToDetails = (product) => {
+    const path = buildProductPath(product);
+    const variant = product.variants?.[0] || {};
+    const vidPart = variant?.vid ? `&vid=${encodeURIComponent(variant.vid)}` : '';
+    const key = getValidateKey();
+    const q = key ? `?k=${encodeURIComponent(key)}${vidPart}` : (vidPart ? `?${vidPart.slice(1)}` : '');
+    navigate(`${path}${q}`, { state: { product, vid: variant?.vid } });
+  };
+
+
+
+
+
+
+
+
   // You can still return early AFTER hooks are declared
   if (isLoading) return <p className="text-center py-8">Loading…</p>;
   if (isError) return <p className="text-center py-8">Error loading products.</p>;
@@ -182,11 +222,7 @@ export default function BestSeller() {
  <div className="p-2 bg-white rounded-[8px] flex flex-col h-full">
   {/* Image */}
   <img
-    onClick={() =>
-      navigate('/product-details', {
-        state: { product, vid },
-      })
-    }
+    onClick={() => goToDetails(product)}
     src={`https://thenewspotent.com/manage/assets/uploads/${product.image}`}
     alt={product.name}
     className="w-full object-cover cursor-pointer rounded-[8px] h-64" // fixed image height
@@ -217,11 +253,7 @@ export default function BestSeller() {
       <br />
       <button
         className="text-center w-full lg:w-[50%] mx-auto justify-center items-center bg-[#2972A5] text-white py-2 rounded-full mt-2"
-        onClick={() =>
-          navigate('/shop', {
-            state: { product, vid },
-          })
-        }
+       onClick={() => goToDetails(product)}
       >
         View Product
       </button>

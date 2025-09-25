@@ -15,8 +15,6 @@ import { useAuth } from '../../../context/AuthContext';
 import { useCart } from '../../../context/CartContext';
 import ValidateOnLoad from '../../../components/ValidateOnLoad';
 import DiscoverMore from './DiscoverMore';
-// import OwnPerfume from '../../../components/ownperfume/OwnPerfume';
-// import SpecialDealsSlider from '../../../components/SpecialDealsSlider/SpecialDealsSlider';
 
 const API_BASE = 'https://thenewspotent.com/manage/api';
 const VALIDATE_URL = 'https://thenewspotent.com/manage/api/validate';
@@ -52,19 +50,22 @@ const slugify = (s='') =>
   String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
 /* ------------------------------ guest cart utils ---------------------------- */
+const stableKey = (id, variantid) => `${String(id)}::${String(variantid ?? '')}`;
+
 const readGuest = () => {
-  const raw = JSON.parse(localStorage.getItem('guestCart') || '[]');
+  let raw = [];
+  try { raw = JSON.parse(localStorage.getItem('guestCart') || '[]'); } catch {}
   const norm = (Array.isArray(raw) ? raw : []).map(x => ({
     id: x.productid ?? x.id,
-    vid: x.variantid ?? x.vid,
-    name: x.name,
-    image: x.image,
+    vid: x.variantid ?? x.vid ?? null,
+    name: x.name ?? '',
+    image: x.image ?? '',
     price: Number(x.price) || 0,
-    qty: Number(x.qty) || 1,
+    qty: Math.max(1, Number(x.qty) || 1),
   }));
   const map = new Map();
   for (const it of norm) {
-    const k = `${it.id}::${it.vid}`;
+    const k = stableKey(it.id, it.vid);
     const prev = map.get(k);
     map.set(k, prev ? { ...it, qty: (Number(prev.qty) || 0) + (Number(it.qty) || 0) } : it);
   }
@@ -73,11 +74,11 @@ const readGuest = () => {
 const writeGuest = (arr) => {
   const safe = (Array.isArray(arr) ? arr : []).map(i => ({
     id: i.id,
-    vid: i.vid ?? i.variantid,
-    name: i.name,
-    image: i.image,
+    vid: i.vid ?? i.variantid ?? null,
+    name: i.name ?? '',
+    image: i.image ?? '',
     price: Number(i.price) || 0,
-    qty: Number(i.qty) || 1,
+    qty: Math.max(1, Number(i.qty) || 1),
   }));
   localStorage.setItem('guestCart', JSON.stringify(safe));
 };
@@ -89,7 +90,7 @@ export default function ProductDetails() {
   const [sp, setSp] = useSearchParams();
 
   const { user, token, setToken } = useAuth();
-  const { refresh } = useCart();
+  const { refresh, drainGuestToServer } = useCart();
 
   // capture & persist validate key; read optional ?vid
   const validateKey = resolveValidateKey(sp);
@@ -105,12 +106,17 @@ export default function ProductDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // If user logs in while on this page and guest has items, merge once.
+  useEffect(() => {
+    if (user && token && readGuest().length) {
+      drainGuestToServer();
+    }
+  }, [user, token, drainGuestToServer]);
+
   /* ----------------------- ensure token before API calls --------------------- */
   const fetchTokenIfNeeded = async () => {
-    // 1) context
     if (token) return token;
 
-    // 2) localStorage (valid for <= 24h)
     const saved = localStorage.getItem('authToken');
     const time = localStorage.getItem('authTokenTime');
     const fresh = saved && time && (Date.now() - parseInt(time, 10) < 86400000);
@@ -119,7 +125,6 @@ export default function ProductDetails() {
       return saved;
     }
 
-    // 3) get a new one (same as your ValidateOnLoad)
     try {
       const { data } = await axios.post(
         VALIDATE_URL,
@@ -162,7 +167,6 @@ export default function ProductDetails() {
           const { data } = await axios.get(url, { headers });
           fetched = data?.data || data || null;
         } else {
-          // best-effort slug endpoint (if backend supports it)
           try {
             const slugUrl = `${API_BASE}/products/slug/${encodeURIComponent(slugOrId)}`;
             const { data } = await axios.get(slugUrl, { headers });
@@ -235,7 +239,6 @@ export default function ProductDetails() {
     } else {
       const first = variantOptions[0];
       setSelectedVar(first);
-      // normalize URL to contain ?vid= for shareability
       setSp(prev => {
         const p = new URLSearchParams(prev);
         p.set('vid', first.vid);
@@ -255,13 +258,14 @@ export default function ProductDetails() {
   /* ------------------------------ cart handlers ------------------------------ */
   const addGuest = () => {
     const current = readGuest();
-    const idx = current.findIndex(i => String(i.id) === String(product.id) && String(i.vid) === String(selectedVar.vid));
+    const key = stableKey(product.id, selectedVar.vid);
+    const idx = current.findIndex(i => stableKey(i.id, i.vid) === key);
     if (idx > -1) current[idx].qty += qty;
     else current.push({
       id: product.id,
       vid: selectedVar.vid,
-      name: product.name,
-      image: product.image,
+      name: product.name ?? '',
+      image: product.image ?? '',
       price: unitPrice,
       qty,
     });
@@ -274,16 +278,26 @@ export default function ProductDetails() {
     const headers = makeHeaders(authTok || token, validateKey);
     return axios.post(
       `${API_BASE}/cart`,
-      qs.stringify({ userid: user.id, productid: product.id, variantid: selectedVar.vid, qty }),
+      qs.stringify({
+        userid: user.id,
+        productid: product.id,
+        variantid: String(selectedVar.vid ?? ''),
+        qty
+      }),
       { headers }
     );
   };
 
   const handleAddToCart = async () => {
     if (!selectedVar?.vid || !product?.id) return;
-    if (!user || !token) return addGuest();
+    if (!user || !token) {
+      addGuest();
+      return;
+    }
     try {
       await addServer();
+      // If leftover guest items exist, merge now (idempotent)
+      if (readGuest().length) await drainGuestToServer();
       await refresh();
       alert(`${product.name} added to cart`);
     } catch {
@@ -299,6 +313,7 @@ export default function ProductDetails() {
     }
     try {
       await addServer();
+      if (readGuest().length) await drainGuestToServer();
       await refresh();
       navigate('/checkout');
     } catch {
@@ -348,7 +363,6 @@ export default function ProductDetails() {
 
   return (
     <div className="w-full bg-white">
-      {/* 🔐 keep your background token protection/checks running */}
       <ValidateOnLoad />
 
       <div className="w-full px-2 lg:px-20">
@@ -408,113 +422,109 @@ export default function ProductDetails() {
             </div>
           </div>
 
-            {/* RIGHT: Details */}
-            <div className="flex flex-col">
-              {/* Eyebrow + Share */}
-              <div className="flex items-start justify-between">
-                <div className="text-[#2972A5] text-sm">1st Edition</div>
-                <button className="p-2 rounded-full hover:bg-white/50" aria-label="Share" onClick={handleShare}>
-                  <ShareIcon className="h-5 w-5 text-[#0E283A]" />
-                </button>
-              </div>
+          {/* RIGHT: Details */}
+          <div className="flex flex-col">
+            <div className="flex items-start justify-between">
+              <div className="text-[#2972A5] text-sm">1st Edition</div>
+              <button className="p-2 rounded-full hover:bg-white/50" aria-label="Share" onClick={handleShare}>
+                <ShareIcon className="h-5 w-5 text-[#0E283A]" />
+              </button>
+            </div>
 
-              <h1 className="mt-1 text-[#215B84] text-[manrope] text-[31px] md:text-[34px] font-[700] leading-[125%]">
-                {product.name || 'Product'}
-              </h1>
+            <h1 className="mt-1 text-[#215B84] text-[manrope] text-[31px] md:text-[34px] font-[700] leading-[125%]">
+              {product.name || 'Product'}
+            </h1>
 
-              <p className="mt-1 text-[#0E283A] text-[manrope] text-[16px] leading-[150%] tracking-[0.5px] font-[400]">
-                {heroSubtitle}
-              </p>
+            <p className="mt-1 text-[#0E283A] text-[manrope] text-[16px] leading-[150%] tracking-[0.5px] font-[400]">
+              {heroSubtitle}
+            </p>
 
-              {/* Rating row */}
-              <div className="mt-3 flex items-center gap-4 text-[#0E283A]/80">
-                <span className="inline-flex items-center gap-1 rounded-full bg-white border border-[#C9D6E2] px-2 py-1 text-sm">
-                  <span className="inline-flex">
-                    {Array.from({ length: 1 }).map((_, i) => (
-                      <StarSolid key={i} className="h-4 w-4 text-[#2972A5]" />
-                    ))}
-                  </span>
-                  4.8
+            <div className="mt-3 flex items-center gap-4 text-[#0E283A]/80">
+              <span className="inline-flex items-center gap-1 rounded-full bg-white border border-[#C9D6E2] px-2 py-1 text-sm">
+                <span className="inline-flex">
+                  {Array.from({ length: 1 }).map((_, i) => (
+                    <StarSolid key={i} className="h-4 w-4 text-[#2972A5]" />
+                  ))}
                 </span>
-                <span className="text-sm">67 Reviews</span>
-                <span className="text-sm">93% of buyers have recommended this.</span>
-              </div>
+                4.8
+              </span>
+              <span className="text-sm">67 Reviews</span>
+              <span className="text-sm">93% of buyers have recommended this.</span>
+            </div>
 
-              <div className="mt-5 rounded-[12px] border border-[#C9D6E2] bg-white/50 p-4 md:p-5">
-                <div className="mt-4 flex flex-col lg:flex-row gap-4">
-                  <div className="flex-1">
-                    <div className="text-sm text-[#0E283A]/90 leading-[150%]">
-                      {subTitleBlock}
-                    </div>
+            <div className="mt-5 rounded-[12px] border border-[#C9D6E2] bg-white/50 p-4 md:p-5">
+              <div className="mt-4 flex flex-col lg:flex-row gap-4">
+                <div className="flex-1">
+                  <div className="text-sm text-[#0E283A]/90 leading-[150%]">
+                    {subTitleBlock}
+                  </div>
 
-                    {/* Qty + Add */}
-                    <div className="mt-4 flex items-center gap-3">
-                      <div className="flex items-center justify-between border border-[#C9D6E2] rounded-full h-12 w-[140px] bg-white">
-                        <button
-                          onClick={() => setQty((q) => Math.max(1, q - 1))}
-                          disabled={qty === 1}
-                          className="px-4 py-2 disabled:opacity-40"
-                          aria-label="Decrease quantity"
-                        >
-                          <MinusIcon className="h-5 w-5 text-[#0E283A]" />
-                        </button>
-                        <span className="min-w-[2rem] text-center text-[#0E283A]">{qty}</span>
-                        <button
-                          onClick={() => setQty((q) => q + 1)}
-                          className="px-4 py-2"
-                          aria-label="Increase quantity"
-                        >
-                          <PlusIcon className="h-5 w-5 text-[#0E283A]" />
-                        </button>
-                      </div>
-
+                  {/* Qty + Add */}
+                  <div className="mt-4 flex items-center gap-3">
+                    <div className="flex items-center justify-between border border-[#C9D6E2] rounded-full h-12 w-[140px] bg-white">
                       <button
-                        onClick={handleAddToCart}
-                        className="h-12 px-6 rounded-full bg-[#2972A5] text-white font-medium hover:opacity-95"
+                        onClick={() => setQty((q) => Math.max(1, q - 1))}
+                        disabled={qty === 1}
+                        className="px-4 py-2 disabled:opacity-40"
+                        aria-label="Decrease quantity"
                       >
-                        Add To Cart
+                        <MinusIcon className="h-5 w-5 text-[#0E283A]" />
+                      </button>
+                      <span className="min-w-[2rem] text-center text-[#0E283A]">{qty}</span>
+                      <button
+                        onClick={() => setQty((q) => q + 1)}
+                        className="px-4 py-2"
+                        aria-label="Increase quantity"
+                      >
+                        <PlusIcon className="h-5 w-5 text-[#0E283A]" />
                       </button>
                     </div>
 
                     <button
-                      onClick={handleBuyNow}
-                      className="mt-4 w-[260px] h-12 rounded-full bg-[#0E283A] text-white font-semibold hover:opacity-95"
+                      onClick={handleAddToCart}
+                      className="h-12 px-6 rounded-full bg-[#2972A5] text-white font-medium hover:opacity-95"
                     >
-                      Buy Now
+                      Add To Cart
                     </button>
                   </div>
 
-                  {/* delivery card */}
-                  <div className="w-full lg:w-[260px] rounded-[10px] border border-[#C9D6E2] bg-white/60 p-4">
-                    <div className="space-y-4 text-sm text-[#0E283A]">
-                      <div>
-                        <div className="font-semibold">Free Delivery</div>
-                        <div className="text-[#0E283A]/70">Enter your Postal code for Delivery Availability</div>
-                      </div>
-                      <div>
-                        <div className="font-semibold">Return Delivery</div>
-                        <div className="text-[#0E283A]/70">
-                          Free 30 days Delivery Return. <span className="underline">Details</span>
-                        </div>
+                  <button
+                    onClick={handleBuyNow}
+                    className="mt-4 w-[260px] h-12 rounded-full bg-[#0E283A] text-white font-semibold hover:opacity-95"
+                  >
+                    Buy Now
+                  </button>
+                </div>
+
+                {/* delivery card */}
+                <div className="w-full lg:w-[260px] rounded-[10px] border border-[#C9D6E2] bg-white/60 p-4">
+                  <div className="space-y-4 text-sm text-[#0E283A]">
+                    <div>
+                      <div className="font-semibold">Free Delivery</div>
+                      <div className="text-[#0E283A]/70">Enter your Postal code for Delivery Availability</div>
+                    </div>
+                    <div>
+                      <div className="font-semibold">Return Delivery</div>
+                      <div className="text-[#0E283A]/70">
+                        Free 30 days Delivery Return. <span className="underline">Details</span>
                       </div>
                     </div>
                   </div>
                 </div>
-
-                {/* sr total */}
-                <div className="sr-only">₹{totalPrice.toFixed(0)}/-</div>
               </div>
 
-              <div className="mt-6 divide-y divide-[#C9D6E2] rounded-[8px] bg-transparent" />
+              {/* sr total */}
+              <div className="sr-only">₹{totalPrice.toFixed(0)}/-</div>
             </div>
+
+            <div className="mt-6 divide-y divide-[#C9D6E2] rounded-[8px] bg-transparent" />
+          </div>
         </div>
 
         <hr className="border-[#C9D6E2] mt-8 w-full" />
 
         {/* Discover more */}
         <DiscoverMore currentId={product.id} />
-        {/* <SpecialDealsSlider /> */}
-        {/* <OwnPerfume /> */}
       </div>
     </div>
   );
