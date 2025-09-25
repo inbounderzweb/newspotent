@@ -15,7 +15,7 @@ import { useCart } from '../../../context/CartContext';
 import AuthModal from '../../../Authmodal/AuthModal';
 import Swal from 'sweetalert2';
 
-const API_BASE = 'https://ikonixperfumer.com/beta/api';
+const API_BASE = 'https://thenewspotent.com/manage/api/';
 
 /**
  * Checkout Page

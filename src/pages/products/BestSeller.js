@@ -19,7 +19,7 @@ import { useCart } from "../../context/CartContext";
 
 import bestsellers from "../../assets/best-seller.svg";
 
-const API_BASE = "https://ikonixperfumer.com/beta/api";
+const API_BASE = "https://thenewspotent.com/manage/api/";
 
 /* ---------------- Sync guest → server cart ---------------- */
 async function syncGuestCartWithServer(userId, token) {
