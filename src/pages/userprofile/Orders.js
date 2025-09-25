@@ -5,7 +5,7 @@ import axios from "axios";
 import qs from "qs";
 
 const API_BASE = "https://thenewspotent.com/manage/api";
-const API_BASE_IMG = "https://thenewspotent.com/manage/assets";
+const API_BASE_IMG = "https://thenewspotent.com/manage/";
 
 function Orders() {
   const { user, token } = useAuth();
