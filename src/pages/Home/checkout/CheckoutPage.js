@@ -314,7 +314,7 @@ export default function CheckoutPage() {
   // ---------------------------
   // Razorpay Pay Click Handler
   // ---------------------------
-  const handlePayClick = async (order_id) => {
+   const handlePayClick = async (order_id) => {
     try {
       if (!order_id) throw new Error('Missing internal order id');
       setError('');
@@ -324,7 +324,7 @@ export default function CheckoutPage() {
         order_id,
         userid: user?.id,
         client_hint_amount: Math.round(Number(total)), // paise hint (server must recompute)
-        receipt: `ikonix_${order_id}`,
+        receipt: `Newspotent_${order_id}`,
         notes: JSON.stringify({ source: 'web', cart: cartItems.length }),
       });
 
@@ -335,12 +335,16 @@ export default function CheckoutPage() {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/x-www-form-urlencoded',
+            'Client-Secret':'Q2TERcLQ6oxWStqNvmN5tNpt'
           },
         }
       );
-
       const res = raw?.data ?? raw ?? {};
-      const keyId = 'rzp_test_RKWSDgtssopZSP';
+      console.log(res,'response from create order api')
+
+
+
+      const keyId = 'rzp_test_RO7mQh61by0ER2';
       const rzpOrderId = res.porder_id;
 
       if (!keyId || !/^rzp_(test|live)_/.test(String(keyId))) {
@@ -408,49 +412,168 @@ export default function CheckoutPage() {
     }
   };
 
+  // const handleCheckout = async () => {
+  //   const billId = sameAsShip ? shippingId : billingId;
+  //   try {
+  //     setLoading(true);
+  //     setError('');
+  //     // Ensure server has items if user just logged in
+  //     await ensureServerCartNotEmpty();
+  //     const payload = qs.stringify({
+  //       userid: user.id,
+  //       shipping_address: shippingId,
+  //       billing_address: billId,
+  //       delivery_method: deliveryMethod,
+  //     });
+      
+  //     const doCheckout = () =>
+  //       axios.post(`${API_BASE}/checkout`, payload, {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //           'Content-Type': 'application/x-www-form-urlencoded',
+  //         },
+  //       });
+  //     let { data } = await doCheckout();
+  //     const needRetry =
+  //       data?.status === false &&
+  //       typeof data?.message === 'string' &&
+  //       data.message.toLowerCase().includes('no products added');
+  //     if (needRetry) {
+  //       await syncGuestToServer(readGuest());
+  //       await refresh();
+  //       const second = await doCheckout();
+  //       data = second.data;
+  //     }
+  //     if (data?.status === true) {
+  //       setShowAddressModal(false);
+  //       handlePayClick(data.order_id);
+  //     } else {
+  //       setError(data?.message || 'Checkout failed, please try again');
+  //     }
+  //   } catch {
+  //     setError('Checkout failed, please try again');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const handleCheckout = async () => {
-    const billId = sameAsShip ? shippingId : billingId;
-    try {
-      setLoading(true);
-      setError('');
-      // Ensure server has items if user just logged in
-      await ensureServerCartNotEmpty();
-      const payload = qs.stringify({
-        userid: user.id,
-        shipping_address: shippingId,
-        billing_address: billId,
-        delivery_method: deliveryMethod,
+  try {
+    setLoading(true);
+    setError('');
+
+    // Auth guard
+    if (!user || !token) {
+      setLoading(false);
+      setShowAuthModal(true);
+      return;
+    }
+
+    // Address guards
+    const shipId = Number(shippingId);
+    const billId = Number(sameAsShip ? shippingId : billingId);
+    if (!shipId || !billId) {
+      setLoading(false);
+      setError('Please select both shipping and billing address');
+      return;
+    }
+
+    // Helper: how many items are on server cart now?
+    const getServerCount = async () => {
+      try {
+        const { data } = await axios.post(
+          `${API_BASE}/cart`,
+          qs.stringify({ userid: user.id }),
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+          }
+        );
+        const list = Array.isArray(data?.data) ? data.data : [];
+        return list.length;
+      } catch {
+        return -1; // unknown
+      }
+    };
+
+    // Ensure server has items (handles guest→login)
+    let serverCount = await getServerCount();
+    if (serverCount === 0) {
+      // drain guest → server
+      await syncGuestToServer(readGuest());
+      await refresh();
+      serverCount = await getServerCount();
+    }
+
+    const payload = qs.stringify({
+      userid: String(user.id),
+      shipping_address: String(shipId),
+      billing_address: String(billId),
+      delivery_method: Number(deliveryMethod) || 1,
+    });
+
+    const doCheckout = () =>
+      axios.post(`${API_BASE}/checkout`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        timeout: 20000,
       });
-      const doCheckout = () =>
-        axios.post(`${API_BASE}/checkout`, payload, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-        });
-      let { data } = await doCheckout();
-      const needRetry =
-        data?.status === false &&
-        typeof data?.message === 'string' &&
-        data.message.toLowerCase().includes('no products added');
-      if (needRetry) {
+
+    // First attempt
+    let resp;
+    try {
+      resp = await doCheckout();
+    } catch (err) {
+      const msg = String(
+        err?.response?.data?.message || err?.message || ''
+      ).toLowerCase();
+
+      // If backend says "no products added", try syncing guest once more
+      if (msg.includes('no products added')) {
         await syncGuestToServer(readGuest());
         await refresh();
-        const second = await doCheckout();
-        data = second.data;
-      }
-      if (data?.status === true) {
-        setShowAddressModal(false);
-        handlePayClick(data.order_id);
+        resp = await doCheckout();
       } else {
-        setError(data?.message || 'Checkout failed, please try again');
+        throw err;
       }
-    } catch {
-      setError('Checkout failed, please try again');
-    } finally {
-      setLoading(false);
     }
-  };
+
+    const data = resp?.data;
+    const ok =
+      data?.status === true ||
+      data?.success === true ||
+      data?.status === 'true' ||
+      data?.success === 'true';
+
+    if (ok && data?.order_id) {
+      setShowAddressModal(false);
+      await handlePayClick(data.order_id);
+      return;
+    }
+
+    throw new Error(data?.message || 'Checkout failed, please try again');
+
+  } catch (err) {
+    const apiMsg =
+      err?.response?.data?.message ||
+      err?.response?.data?.error ||
+      err?.message ||
+      'Checkout failed, please try again';
+    setError(apiMsg);
+    console.error('Checkout error:', {
+      message: apiMsg,
+      status: err?.response?.status,
+      data: err?.response?.data,
+    });
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleCancel = () => {
     setShowAddressModal(false);
