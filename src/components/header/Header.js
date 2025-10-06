@@ -18,6 +18,7 @@ import { useAuth } from "../../context/AuthContext";
 // demo images for the preview (replace with your real ones)
 import Home  from "../../assets/home.svg";
 import Home1 from "../../assets/home2.svg";
+import Swal from "sweetalert2";
 
 const MENU_ITEMS = [
   { title: "Home",       to: "/",           image: Home  },
@@ -61,6 +62,9 @@ export default function Header() {
 
   const toggle = () => setIsOpen(o => !o);
 
+
+
+
   // Mock cart (replace with real cart from your store)
   const mockCart = [
     { id: 1, title: "Bangalore Bloom Men’s", price: 399, qty: 1, img: "https://placehold.co/200x240?text=Perfume" },
@@ -87,20 +91,37 @@ export default function Header() {
           ].join(" ")}
         >
           <Link to="/" aria-label="Newspotent home">
-            <img src={logonews} alt="The Newspotent logo" className="cursor-pointer h-8" />
+            <img src={logonews} alt="The Newspotent logo" className="cursor-pointer h-8 w-48 md:w-full" />
           </Link>
+          {/* { user ? <div className="text-[#1f567c] text-[12px] text-right flex lg:hidden"><p className="capitalize"> Welcome {user.name}</p></div> :'' }  */}
+           <div onClick={()=>navigate('/quizes')} className="bg-[#1f567c] lg:hidden py-[2px] rounded-full hover:bg-[#17445f] flex align-middle justify-center text-white my-auto px-6">
+                <span className="text-[14px]">Quizes</span>
+              </div>
+
 
           <div className="flex items-center gap-5">
+
             {/* Desktop icons */}
             <div className="items-center gap-5 hidden lg:flex">
 
+              { user ? <div className="text-[#1f567c]"><p className="capitalize"> Welcome {user.name}</p></div> :'' } 
+
+
             <li className="cursor-pointer flex gap-2">
-            <a href="https://forms.gle/Fx4KRjcdXFjPcGeR8"><span className="text-xs mt-1 block text-black">Quiz</span></a>
-          </li>
+              <div onClick={()=>navigate('/quizes')} className="bg-[#1f567c] py-1 rounded-full hover:bg-[#17445f] flex align-middle justify-center text-white w-[200px] my-auto">
+                <span className="">Quizes</span>
+              </div>
+            
+            </li>
+
+
+
+
+
+
             {/* <li className="cursor-pointer flex gap-2">
             <span className="text-xs mt-1 block text-black">Quiz-2</span>
           </li> */}
-
 
 
               <img

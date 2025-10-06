@@ -335,16 +335,18 @@ export default function CheckoutPage() {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/x-www-form-urlencoded',
-            'Client-Secret':'Q2TERcLQ6oxWStqNvmN5tNpt'
+            
           },
         }
       );
+
+      // Normalize your API shape
       const res = raw?.data ?? raw ?? {};
-      console.log(res,'response from create order api')
 
-
-
+      // Use the SAME key as the server's mode/account
       const keyId = 'rzp_test_RO7mQh61by0ER2';
+
+      // Must be a Razorpay order id like "order_***"
       const rzpOrderId = res.porder_id;
 
       if (!keyId || !/^rzp_(test|live)_/.test(String(keyId))) {
@@ -356,12 +358,13 @@ export default function CheckoutPage() {
         throw new Error('Invalid Razorpay order id from create-order');
       }
 
+      // Load SDK & open checkout
       await loadRazorpay();
       if (!window.Razorpay) throw new Error('Razorpay SDK not available');
 
       const rzp = new window.Razorpay({
-        key: keyId,
-        order_id: rzpOrderId,
+        key: keyId,            // DO NOT hard-code; must match the server's mode
+        order_id: rzpOrderId,  // must be order_****
         name: 'Ikonix Perfumer',
         description: 'Order Payment',
         image: '/favicon.ico',
@@ -370,13 +373,14 @@ export default function CheckoutPage() {
           email:   res.customer?.email ?? user?.email ?? '',
           contact: res.customer?.phone ?? '',
         },
+          
         theme: { color: '#b49d91' },
         handler: async (resp) => {
           try {
             const form = new FormData();
             form.append('userid', String(user.id));
-            form.append('order_id', String(order_id));
-            form.append('porder_id', resp.razorpay_order_id);
+            form.append('order_id', String(order_id));              // your internal id
+            form.append('porder_id', resp.razorpay_order_id);       // Razorpay order_****
             form.append('payment_id', resp.razorpay_payment_id);
             form.append('signature', resp.razorpay_signature);
 
@@ -386,18 +390,22 @@ export default function CheckoutPage() {
               body: form,
             });
             const result = await verifyRes.json().catch(() => ({}));
+          
             if (!verifyRes.ok || result?.status === false) {
               throw new Error(result?.message || 'Signature verification failed');
             }
+            
+            // console.log(result,'finalout')
+
           } catch (err) {
             setError(err.message || 'Payment verification failed');
-            Swal(err);
+            Swal(err)
           } finally {
             setLoading(false);
-            navigate('/order-confirmation');
+            navigate('/order-confirmation')
           }
         },
-        modal: { ondismiss: () => { setLoading(false); navigate('/'); } },
+        modal: { ondismiss: () => {setLoading(false); navigate('/');} }, 
       });
 
       rzp.on('payment.failed', (resp) => {

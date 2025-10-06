@@ -86,4 +86,6 @@ color: white;
 .no-scrollbar{
   background-color: transparent;
 }
-   
+.swiper-pagination-bullet-active{
+  background-color: #256795 !important;
+  }

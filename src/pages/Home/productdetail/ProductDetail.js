@@ -85,6 +85,7 @@ const writeGuest = (arr) => {
 
 /* ================================= Component ================================ */
 export default function ProductDetails() {
+
   const navigate = useNavigate();
   const { slugOrId } = useParams();
   const [sp, setSp] = useSearchParams();
@@ -105,6 +106,9 @@ export default function ProductDetails() {
   const [activeImg, setActiveImg] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+
+
 
   // If user logs in while on this page and guest has items, merge once.
   useEffect(() => {
@@ -193,31 +197,35 @@ export default function ProductDetails() {
   }, [slugOrId, idFromUrl, initialVid, validateKey]);
 
   /* -------------------------------- gallery --------------------------------- */
-  const images = useMemo(() => {
-    if (!product) return [];
-    const pics = [];
-    if (product.image) pics.push(product.image);
-    if (product.more_images) {
-      const extras = Array.isArray(product.more_images)
-        ? product.more_images
-        : String(product.more_images).split(',').map(s => s.trim()).filter(Boolean);
-      for (const img of extras) if (!pics.includes(img)) pics.push(img);
-    }
-    return pics;
-  }, [product]);
 
-  useEffect(() => { if (images.length) setActiveImg(images[0]); }, [images]);
+const images = useMemo(() => {
+  if (!product) return [];
+  const pics = [];
+  if (product.image) pics.push(product.image);
+  if (product.more_images) {
+    const extras = Array.isArray(product.more_images)
+      ? product.more_images
+      : String(product.more_images).split(',').map(s => s.trim()).filter(Boolean);
+    for (const img of extras) if (!pics.includes(img)) pics.push(img);
+  }
+  return pics;
+}, [product]);
 
-  const nextImg = () => {
-    if (!images.length) return;
-    const i = images.indexOf(activeImg);
-    setActiveImg(images[(i + 1) % images.length]);
-  };
-  const prevImg = () => {
-    if (!images.length) return;
-    const i = images.indexOf(activeImg);
-    setActiveImg(images[(i - 1 + images.length) % images.length]);
-  };
+useEffect(() => { if (images.length) setActiveImg(images[0]); }, [images]);
+
+// ✅ Thumbnail carousel state (must come AFTER images is defined)
+const [thumbStart, setThumbStart] = useState(0);
+const visibleCount = 4;
+const visibleImages = (images.length ? images : [activeImg])
+  .slice(thumbStart, thumbStart + visibleCount);
+
+const handlePrevThumbs = () => {
+  if (thumbStart > 0) setThumbStart(prev => prev - 1);
+};
+const handleNextThumbs = () => {
+  if (thumbStart + visibleCount < images.length) setThumbStart(prev => prev + 1);
+};
+
 
   /* ------------------------------- variants ---------------------------------- */
   const variantOptions = useMemo(
@@ -391,35 +399,33 @@ export default function ProductDetails() {
             </div>
 
             {/* Thumbs */}
-            <div className="mt-4 flex items-center gap-3">
-              <button onClick={prevImg} className="h-6 w-6 rounded-full bg-white/60 flex items-center justify-center" aria-label="Prev">
-                <ChevronLeftIcon className="h-4 w-4 text-[#0E283A]" />
-              </button>
+           
 
+         <div className="mt-4 flex items-center gap-3">
+              {thumbStart > 0 && (
+                <button onClick={handlePrevThumbs} className="h-6 w-6 rounded-full bg-white/60 flex items-center justify-center">
+                  <ChevronLeftIcon className="h-4 w-4 text-[#0E283A]" />
+                </button>
+              )}
               <div className="flex gap-3">
-                {(images.length ? images : [activeImg]).slice(0, 3).map((img) => (
-                  <button
-                    key={img || 'placeholder'}
-                    onClick={() => img && setActiveImg(img)}
+                {visibleImages.map((img) => (
+                  <button key={img} onClick={() => setActiveImg(img)}
                     className={`h-20 w-20 rounded-xl overflow-hidden border transition bg-white/60 ${
                       img && img === activeImg ? 'border-[#2972A5]' : 'border-[#BFD2E1]'
-                    }`}
-                  >
-                    {img ? (
-                      <img
-                        src={`https://thenewspotent.com/manage/assets/uploads/${img}`}
-                        alt=""
-                        className="h-full w-full object-contain"
-                      />
-                    ) : <div className="h-full w-full" />}
+                    }`}>
+                    <img src={`https://thenewspotent.com/manage/assets/uploads/${img}`} className="h-full w-full object-contain" />
                   </button>
                 ))}
               </div>
-
-              <button onClick={nextImg} className="h-6 w-6 rounded-full bg-white/60 flex items-center justify-center" aria-label="Next">
-                <ChevronRightIcon className="h-4 w-4 text-[#0E283A]" />
-              </button>
+              {thumbStart + visibleCount < images.length && (
+                <button onClick={handleNextThumbs} className="h-6 w-6 rounded-full bg-white/60 flex items-center justify-center">
+                  <ChevronRightIcon className="h-4 w-4 text-[#0E283A]" />
+                </button>
+              )}
             </div>
+
+
+
           </div>
 
           {/* RIGHT: Details */}

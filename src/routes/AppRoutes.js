@@ -12,6 +12,7 @@ import OrderConfirmation from "../pages/OrderConfirmation";
 import Orders from "../pages/userprofile/Orders";
 import AddresList from "../pages/userprofile/AddresList";
 import PaymentLanding from "../pages/Home/checkout/PaymentLanding";
+import Quiz from "../pages/quiz/Quiz";
 
 const AppRoutes = () => {
   return (
@@ -34,6 +35,9 @@ const AppRoutes = () => {
       <Route path="/addresses" element={<AddresList />} />
       <Route path="/payment-landing" element={<PaymentLanding />} />
       <Route path="/order-confirmation" element={<OrderConfirmation />} />
+      <Route path="/quizes" element={<Quiz />} />
+
+
     </Routes>
   );
 };

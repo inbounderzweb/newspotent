@@ -150,6 +150,11 @@ export default function DiscoverMore() {
                 {/* Image */}
                 <div className="rounded-[16px] overflow-hidden bg-white">
                   <img
+                  onClick={() =>
+                      navigate(`/product/${p.id}`, {
+                        state: { product: p, vid: variant.vid ?? null },
+                      })
+                    }
                     src={`https://thenewspotent.com/manage/assets/uploads/${p.image}`}
                     alt={p.name}
                     className="w-full h-[220px] object-cover"

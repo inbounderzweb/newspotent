@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, Pagination } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/pagination";
+import logo from "../../assets/logonews.svg";
+import { useNavigate } from "react-router-dom";
 
 const API_BASE = "https://thenewspotent.com/manage/api";
 
@@ -8,15 +14,16 @@ function Students() {
   const [students, setStudents] = useState([]);
   const { token } = useAuth();
 
+  const navigate = useNavigate();
+
   const fetchStudents = async () => {
     try {
       const response = await axios.get(`${API_BASE}/students`, {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json", // GET doesn’t need form-urlencoded
+          "Content-Type": "application/json",
         },
       });
-
       setStudents(response.data.data || []);
     } catch (err) {
       console.error("Error fetching students:", err.response?.data || err);
@@ -24,59 +31,70 @@ function Students() {
   };
 
   useEffect(() => {
-    if (token) {
-      fetchStudents();
-    }
+    if (token) fetchStudents();
   }, [token]);
 
   return (
- <div className="p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-  {students.map((s) => (
-    <div
-      key={s.id}
-      className="bg-white shadow-md rounded-lg p-6 flex flex-col items-center text-center border border-gray-200"
-    >
-      {/* University Logo */}
-      <img
-        src="/university-logo.png" // replace with your logo
-        alt="logo"
-        className="h-10 mb-3"
-      />
+    <div className="w-[90%] mx-auto py-10 relative">
 
-      <h3 className="text-sm font-semibold text-gray-500 mb-2">
-        TEMPORARY STUDENT ID CARD
-      </h3>
+   <h2 className="text-[#256795] font-manrope text-[25px] text-center mb-5">
+        🎓 Quiz Winners
+      </h2>
 
-      {/* Profile Image */}
-      <div className="w-32 h-32 rounded-full overflow-hidden mb-4 border-4 border-gray-200">
-        <img
-          src={`https://thenewspotent.com/manage/assets/uploads/${s.image}`}
-          alt={s.name}
-          className="w-full h-full object-cover"
-        />
+
+
+      <Swiper
+        modules={[Autoplay, Pagination]}
+        autoplay={{ delay: 2500, disableOnInteraction: false }}
+        pagination={{
+          el: ".custom-pagination",
+          clickable: true,
+        
+        }}
+        spaceBetween={30}
+        breakpoints={{
+          320: { slidesPerView: 1 },
+          480: { slidesPerView: 2 },
+          768: { slidesPerView: 3 },
+          1024: { slidesPerView: 4 },
+        }}
+        className="pb-12" // adds bottom padding for pagination spacing
+      >
+
+
+        {/* View All Button */}
+      <div className="flex justify-center mt-6" onClick={()=>navigate('/quizes')}>
+         <button className="bg-[#1f567c] hover:bg-[#17445f] text-white py-2 px-6 rounded-full shadow-md transition-colors">
+          View All
+        </button>
       </div>
 
-      {/* Student Name */}
-      <h2 className="text-lg font-bold text-gray-800">{s.name}</h2>
-      <p className="text-xs text-gray-500 mb-4">NAME</p>
-
-      {/* Course */}
-      <div className="w-full text-left mt-2 border-t border-gray-300 pt-2">
-        <p className="text-sm font-semibold text-gray-700">
-          COURSE <span className="float-right font-normal">{s.course}</span>
-        </p>
+        {students.slice(0, 4).map((s) => (
+          <SwiperSlide key={s.id}>
+            <div className="bg-white rounded-2xl shadow-md text-center p-6 transition-all duration-300 hover:shadow-lg">
+             <img src={logo} className="mx-auto object-cover mb-3" />
+              <img
+                className="w-20 h-20 mx-auto rounded-full object-cover mb-3"
+                src={`https://thenewspotent.com/manage/assets/uploads/${s.image}`}
+                alt={s.name}
+              />
+              <h3 className="text-lg font-semibold">{s.name}</h3>
+              <p className="text-gray-500 text-sm mt-2">{s.description}</p>
+              
+                {/* View All Button */}
+      <div className="flex justify-center mt-6" onClick={()=>navigate('/quizes')}>
+        <button className="bg-[#1f567c] hover:bg-[#17445f] text-white py-2 px-6 rounded-full shadow-md transition-colors">
+          Participate Now
+        </button>
       </div>
+            </div>
+          </SwiperSlide>
+        ))}
+      </Swiper>
 
-      {/* Student ID */}
-      <div className="w-full text-left mt-2 border-t border-gray-300 pt-2">
-        <p className="text-sm font-semibold text-gray-700">
-          STUDENT ID <span className="float-right font-normal">{s.student_id}</span>
-        </p>
-      </div>
+      {/* Pagination container placed below */}
+      <div className="custom-pagination flex justify-center mt-6"></div>
     </div>
-  ))}
-</div>
-
   );
 }
 
