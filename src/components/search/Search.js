@@ -69,23 +69,23 @@ export default function SearchModal({ open, onClose, onSubmit = () => {}, onPick
     onClose();
   }, [onClose]);
 
-  const firePick = useCallback(
-    (prod, vid) => {
-      if (onPick) {
-        onPick(prod, vid);
-      } else {
-        navigate('/product-details', { state: { product: prod, vid } });
-      }
-      closeAndReset();
-    },
-    [onPick, navigate, closeAndReset]
-  );
+  // const firePick = useCallback(
+  //   (prod, vid) => {
+  //     if (onPick) {
+  //       onPick(prod, vid);
+  //     } else {
+  //       navigate('/product-details', { state: { product: prod, vid } });
+  //     }
+  //     closeAndReset();
+  //   },
+  //   [onPick, navigate, closeAndReset]
+  // );
 
   const handleSubmit = e => {
     e.preventDefault();
     if (displayList.length > 0) {
       const { product, variant } = displayList[active];
-      firePick(product, variant.vid);
+      // firePick(product, variant.vid);
     } else {
       onSubmit(query);
       closeAndReset();
@@ -107,7 +107,7 @@ export default function SearchModal({ open, onClose, onSubmit = () => {}, onPick
     } else if (e.key === 'Enter') {
       e.preventDefault();
       const { product, variant } = displayList[active];
-      firePick(product, variant.vid);
+      // firePick(product, variant.vid);
     }
   };
 
@@ -122,6 +122,46 @@ export default function SearchModal({ open, onClose, onSubmit = () => {}, onPick
       )
     );
   };
+
+
+// --- validate key helpers ---
+const VALIDATE_KEY_STORAGE = 'validate_key';
+const getStoredValidateKey = () => {
+  try { return localStorage.getItem(VALIDATE_KEY_STORAGE) || ''; } catch { return ''; }
+};
+const getEnvValidateKey = () => {
+  const vite = (typeof import.meta !== 'undefined' && import.meta?.env?.VITE_VALIDATE_KEY) || undefined;
+  const cra  = (typeof process !== 'undefined' && process?.env?.REACT_APP_VALIDATE_KEY) || undefined;
+  return vite || cra || '';
+};
+
+  const getValidateKey = () => getStoredValidateKey() || getEnvValidateKey() || '';
+
+
+// Slugify and include id
+const slugify = (s='') =>
+  String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+const buildProductPath = (product) => {
+  const slug = product?.slug || product?.seo_slug || slugify(product?.name || '');
+  const safeSlug = slug ? `${slug}-${product.id}` : String(product.id);
+  return `/product/${safeSlug}`;
+};
+
+// Build deep link with ?k= and optional ?vid=
+  const goToDetails = (p) => {
+    const path = buildProductPath(p);
+    const variant = p.variants?.[0] || {};
+    const vidPart = variant?.vid ? `&vid=${encodeURIComponent(variant.vid)}` : '';
+    const key = getValidateKey();
+    const q = key ? `?k=${encodeURIComponent(key)}${vidPart}` : (vidPart ? `?${vidPart.slice(1)}` : '');
+    navigate(`${path}${q}`, { state: { p, vid: variant?.vid } });
+    closeAndReset();
+  };
+
+
+
+
+
 
   if (!show && !open) return null;
 
@@ -182,7 +222,8 @@ export default function SearchModal({ open, onClose, onSubmit = () => {}, onPick
               return (
                 <button
                   key={`${p.id}-${variant.vid}`}
-                  onClick={() => firePick(p, variant.vid)}
+                  // onClick={() => firePick(p, variant.vid)}
+                  onClick={() => goToDetails(p)}
                   className={`w-full flex items-center gap-3 py-2 px-2 rounded-lg text-left hover:bg-gray-100 transition ${
                     idx === active ? 'bg-gray-100' : ''
                   }`}
