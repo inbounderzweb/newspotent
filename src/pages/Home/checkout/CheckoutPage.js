@@ -365,7 +365,7 @@ export default function CheckoutPage() {
       const rzp = new window.Razorpay({
         key: keyId,            // DO NOT hard-code; must match the server's mode
         order_id: rzpOrderId,  // must be order_****
-        name: 'Ikonix Perfumer',
+        name: 'The Newspotent',
         description: 'Order Payment',
         image: '/favicon.ico',
         prefill: {
@@ -374,7 +374,7 @@ export default function CheckoutPage() {
           contact: res.customer?.phone ?? '',
         },
           
-        theme: { color: '#b49d91' },
+        theme: { color: '#1f567c' },
         handler: async (resp) => {
           try {
             const form = new FormData();
