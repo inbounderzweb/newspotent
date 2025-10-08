@@ -63,7 +63,7 @@ function Students() {
 
 
         {/* View All Button */}
-      <div className="flex justify-center mt-6" onClick={()=>navigate('/quizes')}>
+      <div className="flex justify-center mt-6" onClick={()=>navigate('/quiz-winners')}>
          <button className="bg-[#1f567c] hover:bg-[#17445f] text-white py-2 px-6 rounded-full shadow-md transition-colors">
           View All
         </button>

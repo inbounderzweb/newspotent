@@ -13,6 +13,7 @@ import Orders from "../pages/userprofile/Orders";
 import AddresList from "../pages/userprofile/AddresList";
 import PaymentLanding from "../pages/Home/checkout/PaymentLanding";
 import Quiz from "../pages/quiz/Quiz";
+import AllStudents from "../components/students/AllStudents";
 
 const AppRoutes = () => {
   return (
@@ -36,7 +37,7 @@ const AppRoutes = () => {
       <Route path="/payment-landing" element={<PaymentLanding />} />
       <Route path="/order-confirmation" element={<OrderConfirmation />} />
       <Route path="/quizes" element={<Quiz />} />
-
+      <Route path="/quiz-winners" element={<AllStudents />} />
 
     </Routes>
   );

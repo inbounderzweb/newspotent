@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
-import logo from '../../assets/logonews.svg'
+import logo from '../../assets/logonews.svg';
+import { Link } from "react-router-dom";
 
 const API_BASE = "https://thenewspotent.com/manage/api";
 
@@ -31,6 +32,16 @@ function AllStudents() {
 
   return (
     <div className="p-8 bg-gradient-to-b from-blue-50 to-blue-100">
+
+       {/* Breadcrumb */}
+  <nav className="text-sm text-gray-500 flex items-center space-x-1">
+    <Link to="/" className="hover:text-[#1f567c] font-medium">
+      Home
+    </Link>
+    <span>/</span>
+    <span className="text-gray-700 font-medium">Quiz Winners</span>
+  </nav>
+
       <h2 className="text-3xl font-bold text-center mb-10 text-[#1f567c] drop-shadow-sm">
         🎓 Quiz Winners
       </h2>
