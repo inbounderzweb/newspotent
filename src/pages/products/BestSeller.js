@@ -66,7 +66,10 @@ export default function BestSeller() {
     if (isTokenReady) refetch();
   }, [isTokenReady, refetch]);
 
-  const products = data?.data || [];
+  // const products = data?.data || [];
+  const products = (data?.data || []).filter(
+  (product) => product.category_name === "best-sellers"
+);
 
   // Guest cart helpers
   const readGuest = () =>

@@ -98,7 +98,10 @@ export default function InitiativeProducts() {
     }
   }, [isTokenReady, refetch]);
 
-  const products = data?.data || [];
+  // const products = data?.data || [];
+      const products = (data?.data || []).filter(
+  (product) => product.category_name === "The Newspotent"
+);
 
   // ---- Best Sellers only (no filter UI) ----
   const isBestSeller = (p) => {
