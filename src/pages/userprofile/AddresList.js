@@ -237,65 +237,69 @@ const handleDelete = async (addr) => {
     )}
 
     {/* Edit Modal */}
-    {isEditOpen && (
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">
-        <div className="bg-[#FAF6F4] border rounded-2xl shadow-2xl w-[95%] max-w-3xl p-8 relative">
-          {/* Close Button */}
-          <button
-            type="button"
-            onClick={() => setIsEditOpen(false)}
-            className="absolute top-5 right-5  hover:text-[#2A3443] text-lg"
-          >
-            ✕
-          </button>
-
-          {/* Header */}
-          <h2 className="text-2xl font-semibold text-[#2A3443] mb-6">
-            Edit Address
-          </h2>
-          <hr className=" mb-6" />
-
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {[
-              'doorno', 'house', 'street', 'city', 'pincode',
-              'district', 'state', 'country', 'company', 'gst'
-            ].map((field) => (
-              <div key={field} className="flex flex-col">
-                <label className="text-[14px] font-[luxia] mb-1 capitalize">
-                  {field === 'gst' ? 'GST' : field}
-                </label>
-                <input
-                  type="text"
-                  name={field}
-                  placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-                  value={formData[field] || ''}
-                  onChange={handleChange}
-                  className="w-full border rounded-lg px-4 py-2  focus:outline-none focus:ring-1 focus:ring-[#2A3443]/40"
-                />
-              </div>
-            ))}
-
-            {/* Buttons */}
-            <div className="col-span-2 flex justify-between mt-8">
-              <button
-                type="button"
-                onClick={() => setIsEditOpen(false)}
-                className="px-6 py-3 border rounded-lg hover:bg-[#EDE2DD] transition"
-              >
-                Back
-              </button>
-              <button
-                type="submit"
-                className="px-6 py-3 bg-[#2A3443] text-white rounded-lg hover:opacity-90 transition"
-              >
-                Save Changes
-              </button>
-            </div>
-          </form>
-        </div>
+  {isEditOpen && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    {/* Modal Container */}
+    <div className="bg-white rounded-2xl shadow-2xl w-[95%] max-w-3xl overflow-hidden relative animate-fadeIn">
+      
+      {/* Header Bar */}
+      <div className="bg-[#1f567c] text-white px-6 py-4 flex justify-between items-center">
+        <h2 className="text-xl font-semibold tracking-wide">Edit Address</h2>
+        <button
+          onClick={() => setIsEditOpen(false)}
+          className="text-white text-2xl hover:opacity-80 transition"
+        >
+          ✕
+        </button>
       </div>
-    )}
+
+      {/* Body */}
+      <div className="p-8 bg-[#fafafa]">
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 md:grid-cols-2 gap-5"
+        >
+          {[
+            'doorno', 'house', 'street', 'city', 'pincode',
+            'district', 'state', 'country', 'company', 'gst'
+          ].map((field) => (
+            <div key={field} className="flex flex-col">
+              <label className="text-sm font-medium text-gray-700 mb-1 capitalize tracking-wide">
+                {field === 'gst' ? 'GST Number' : field}
+              </label>
+              <input
+                type="text"
+                name={field}
+                placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                value={formData[field] || ''}
+                onChange={handleChange}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#1f567c]/60 focus:border-[#1f567c] outline-none transition"
+              />
+            </div>
+          ))}
+
+          {/* Buttons Row */}
+          <div className="col-span-2 flex justify-end items-center gap-4 mt-6">
+            <button
+              type="button"
+              onClick={() => setIsEditOpen(false)}
+              className="px-6 py-2 rounded-lg border border-black text-black hover:bg-black hover:text-white transition-all duration-200"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-2 bg-[#1f567c] text-white rounded-lg hover:bg-[#17425e] transition-all duration-200"
+            >
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+)}
+
   </div>
 </div>
 
