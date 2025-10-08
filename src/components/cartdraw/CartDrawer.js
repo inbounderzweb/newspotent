@@ -48,118 +48,101 @@ export default function CartDrawer({ open, onClose }) {
   };
 
   return (
-    <div className={`fixed inset-0 z-[100] flex ${!open ? 'pointer-events-none' : ''}`}>
-      {/* Backdrop */}
-      <div
-        onClick={onClose}
-        className={`fixed inset-0 bg-black/40 transition-opacity duration-300 ${
-          open ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
-      />
+   <div className={`fixed inset-0 z-[100] flex ${!open ? 'pointer-events-none' : ''}`}>
+  {/* Backdrop */}
+  <div
+    onClick={onClose}
+    className={`fixed inset-0 bg-black/40 transition-opacity duration-300 ${
+      open ? 'opacity-100' : 'opacity-0 pointer-events-none'
+    }`}
+  />
 
-      {/* Drawer */}
-      <div
-        className={`relative ml-auto h-[90%] rounded-bl-[40px] w-full max-w-md bg-white shadow-xl flex flex-col overflow-hidden transform transition-transform duration-300 ${
-          open ? 'translate-x-0' : 'translate-x-full'
-        }`}
-      >
-        {/* Header */}
-        <div className="p-4 border-b flex items-center justify-between">
-          <div className="font-semibold font-[luxia] text-[#194463] flex gap-2 items-center">
-           <span className='text-[18px]'>Cart</span> <p className='text-[#2972A5] text-[14px]'>({totalCount > 0 && <>{totalCount} items</>})</p>
-          </div>
-          <button onClick={onClose}>
-            <XMarkIcon className="h-6 w-6 text-[#194463]" />
-          </button>
-        </div>
+  {/* Drawer */}
+  <div
+    className={`relative ml-auto w-full max-w-md bg-white shadow-2xl flex flex-col h-full transform transition-transform duration-300 ${
+      open ? 'translate-x-0' : 'translate-x-full'
+    }`}
+  >
+    {/* Header */}
+    <div className="sticky top-0 z-10 bg-[#f5f9fb] p-5 border-b border-[#d1e2f1] flex items-center justify-between">
+      <div className="flex flex-col leading-tight">
+        <span className="text-[22px] font-semibold text-[#194463] font-[luxia]">Your Cart</span>
+        <span className="text-[#2972A5] text-[14px]">
+          {totalCount > 0 ? `${totalCount} item${totalCount > 1 ? 's' : ''}` : 'No items'}
+        </span>
+      </div>
+      <button onClick={onClose} className="hover:bg-[#e5f2fa] p-2 rounded-full transition">
+        <XMarkIcon className="h-6 w-6 text-[#194463]" />
+      </button>
+    </div>
 
-        {/* Items */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {items.length === 0 ? (
-            <p className="text-center text-[#2972A5] mt-10">Your cart is empty.</p>
-          ) : (
-            items.map(item => (
-              <div
-                key={`${item.id}-${item.variantid}`} // stable composite key
-                className="flex items-center justify-between border-b-[1px] border-[#2972A5] pb-6"
-              >
+    {/* Items Section */}
+    <div className="flex-1 overflow-y-auto p-5 space-y-5 bg-[#f9fcfe]">
+      {items.length === 0 ? (
+        <p className="text-center text-[#2972A5] mt-10 text-[16px]">Your cart is empty.</p>
+      ) : (
+        items.map(item => (
+          <div
+            key={`${item.id}-${item.variantid}`}
+            className="bg-white rounded-xl shadow-md border border-[#dce8f3] p-4 flex gap-4 items-start transition hover:shadow-lg"
+          >
+            <img
+              src={`https://thenewspotent.com/manage/assets/uploads/${item.image}`}
+              alt={item.name}
+              className="w-28 h-28 object-cover rounded-lg"
+            />
+            <div className="flex flex-col flex-1 justify-between">
+              <div>
+                <p className="text-[#194463] font-[lato] text-[18px] font-semibold leading-tight">
+                  {item.name}
+                </p>
+                <p className="text-[#2972A5] text-[16px] font-bold mt-1">₹{item.price}</p>
+              </div>
 
-                <div className="flex items-center gap-3">
-
-                  <img
-                    src={`https://thenewspotent.com/manage/assets/uploads/${item.image}`}
-                    alt={item.name}
-                    className="w-40 object-cover rounded"
-                  />
-
-                  <div className='flex flex-col justify-between gap-3'>
-
-                    <p className="text-[#2972A5] font-[lato] text-[21px] font-[700] tracking-[0.5px] leading-[150%]">{item.name}</p>
-                    {/* <p className="text-xs text-gray-500">Qty: {Number(item.qty) || 0}</p> */}
-                    <span className='text-[#194463] font-[lato] text-[21px] font-[700] tracking-[0.5px] leading-[150%]'>Rs.{item.price}</span>
-                    {/* <p className="text-xs text-gray-500">variationid:{item.variantid}</p> */}
-
-<div className='flex gap-2 items-center'>
-<span className='text-[#194463] font-[lato] text-[16px tracking-[0.5px] leading-[150%]'>Qty</span>
-
- <div className='border-[1px] rounded-[24px] border-[#194463] w-full text-center'>
-                  <div className='felx items-center justify-between w-full'>
-                  {/* Decrement */}
+              {/* Quantity and Remove */}
+              <div className="flex items-center justify-between mt-3">
+                <div className="flex items-center border border-[#194463] rounded-full overflow-hidden">
                   <button
                     onClick={() => dec(item.cartid, item.id, item.variantid)}
-                    className="w-[33.3%]"
-                  >−</button>
-
-                  {/* Current qty */}
-                  <span className="w-[33.3%] text-center">{Number(item.qty) || 0}</span>
-
-                  {/* Increment */}
+                    className="px-3 py-1 text-[#194463] font-bold"
+                  >
+                    −
+                  </button>
+                  <span className="px-4 text-[#194463] font-medium">{Number(item.qty) || 0}</span>
                   <button
                     onClick={() => inc(item.cartid, item.id, item.variantid)}
-                    className="w-[33.3%]"
-                  >+</button>
-                    </div>
-                  </div>
-
-
-
-                  <div> 
-                  {/* Remove */}
-                  <button
-                    onClick={() => remove(item.cartid, item.id, item.variantid)}
-                    className="text-[#2972A5] underline text-sm hover:underline"
+                    className="px-3 py-1 text-[#194463] font-bold"
                   >
-                    Remove
+                    +
                   </button>
+                </div>
 
-                  </div>
+                <button
+                  onClick={() => remove(item.cartid, item.id, item.variantid)}
+                  className="text-[#2972A5] text-sm underline hover:text-[#194463] transition"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          </div>
+        ))
+      )}
+    </div>
 
-
-
-
-
+    {/* Footer (Sticky Summary) */}
+    {items.length > 0 && (
+      <div className="sticky bottom-0 bg-white border-t border-[#d1e2f1] px-6 py-5">
+        <button
+          onClick={goCheckout}
+          className="w-full py-3 bg-[#2972A5] text-white text-lg rounded-md font-semibold hover:bg-[#194463] transition"
+        >
+          Proceed to Checkout
+        </button>
+      </div>
+    )}
+  </div>
 </div>
 
-
-                  </div>
-
-
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="border-t px-6 py-6">
-          <button
-            onClick={goCheckout}
-            className="w-full py-3 bg-[#2972A5] text-white text-lg rounded-md hover:opacity-90 transition"
-          >
-            Checkout
-          </button>
-        </div>
-      </div>
-    </div>
   );
 }

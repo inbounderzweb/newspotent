@@ -187,7 +187,7 @@ const buildProductPath = (product) => {
 
   return (
     <div className="w-full bg-[#E6EEF5] py-8">
-      <div className="mx-auto w-[95%] md:w-[90%] xl:w-[1200px] grid grid-cols-1 md:grid-cols-[250px_1fr] gap-8">
+      <div className="mx-auto w-[95%] md:w-[90%] grid grid-cols-1 md:grid-cols-[250px_1fr] gap-8">
         {/* Sidebar filters */}
         <aside className="bg-white/60 rounded-[10px] p-4">
           <h3 className="font-semibold text-[#0E283A] mb-4">Filters</h3>

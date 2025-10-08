@@ -14,6 +14,7 @@ import SearchModal from "../search/Search";
 import CartDrawer  from "../cartdraw/CartDrawer";
 import AuthModal   from "../../Authmodal/AuthModal";
 import { useAuth } from "../../context/AuthContext";
+import { useCart } from "../../context/CartContext";
 
 // demo images for the preview (replace with your real ones)
 import Home  from "../../assets/home.svg";
@@ -31,6 +32,15 @@ const MENU_ITEMS = [
 ];
 
 export default function Header() {
+
+
+ const { items } = useCart(); // Access the cart values from context
+
+
+  // Example: count total number of items
+  const totalItems = items.reduce((sum, item) => sum + (item.qty || 0), 0);
+
+
   const [isOpen, setIsOpen]         = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [cartOpen, setCartOpen]     = useState(false);
@@ -127,20 +137,24 @@ export default function Header() {
               <img
                 src={profile}
                 alt="Profile"
-                className="cursor-pointer"
+                className="cursor-pointer w-[27px]"
                 onClick={() => user ? navigate('/user-profile') : setAuthOpen(true)}
               />
 
+            <div className="flex gap-1">
               <img
                 src={cartIco}
                 alt="Cart"
                 className="cursor-pointer w-[27px]"
                 onClick={() => setCartOpen(true)}
               />
+              <span className="text-[12px] text-right -mt-2 font-bold text-[#1f567c]">{totalItems}</span>
+            </div>
+
               <img
                 src={search}
                 alt="Search"
-                className="cursor-pointer"
+                className="cursor-pointer w-[27px]"
                 onClick={() => setSearchOpen(true)}
               />
             </div>
@@ -150,7 +164,7 @@ export default function Header() {
               <img
                 src={isOpen ? closeIcon : burgerMenu}
                 alt={isOpen ? "Close menu" : "Open menu"}
-                className="w-5 h-5"
+                className="w-[27px]"
               />
             </button>
           </div>
@@ -164,7 +178,8 @@ export default function Header() {
             <img src={search} alt="Search" className="w-6 h-6 mx-auto" />
             <span className="text-xs mt-1 block">Search</span>
           </li>
-          <li onClick={() => setCartOpen(true)} className="cursor-pointer flex gap-2">
+          <li onClick={() => setCartOpen(true)} className="cursor-pointer flex gap-2 items-center">
+            <span className="text-[12px] font-bold text-[#1f567c]">{totalItems}</span>
             <img src={cartIco} alt="Cart" className="w-6 h-6 mx-auto" />
             <span className="text-xs mt-1 block">Cart</span>
           </li>
@@ -173,8 +188,9 @@ export default function Header() {
             className="cursor-pointer flex gap-2"
           >
             <img src={profile} alt="Profile" className="w-6 h-6 mx-auto" />
-            <span className="text-xs mt-1 block">{user ? 'Profile' : 'Login'}</span>
-          </li>
+<span className="text-xs mt-1 block">
+  {user ? (user.name.length > 10 ? `${user.name.substring(0, 10)}...` : user.name) : 'Login'}
+</span>          </li>
         </ul>
       </nav>
 

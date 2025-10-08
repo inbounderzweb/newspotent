@@ -39,7 +39,7 @@ function Home() {
          <div><B2bProducts/></div>
          <div><Apparels/></div>
          <div><BestSeller /></div>
-         <div><Brand /></div>
+         {/* <div><Brand /></div> */}
          <div><Students /></div>
         {/* <div><SpecialDealsSlider /></div> */}
         {/* <div><OwnPerfume /></div>

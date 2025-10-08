@@ -146,217 +146,159 @@ const handleDelete = async (addr) => {
 
 
   return (
-    <div className="w-[95%] lg:w-[75%] mx-auto px-4">
-      {/* Breadcrumb */}
-      <nav className="text-xs text-gray-500 mb-6">
-        <Link to="/user-profile" className="hover:underline">
-          Profile
-        </Link>
-        <span> / </span>
-        <span className="text-gray-700">Address</span>
-      </nav>
+   <div className="min-h-screen py-12 px-4">
+  <div className="max-w-5xl mx-auto">
+    {/* Breadcrumb */}
+    <nav className="text-sm mb-8 flex items-center gap-2">
+      <Link to="/user-profile" className="hover:underline">
+        Profile
+      </Link>
+      <span>/</span>
+      <span className="">Address</span>
+    </nav>
 
-      {/* Address Section */}
-      <h2 className="text-xl font-semibold mb-4 text-gray-800">Saved Addresses</h2>
+    {/* Heading */}
+    <h1 className="text-3xl font-semibold text-[#2A3443] mb-10 tracking-wide">
+      Saved Addresses
+    </h1>
 
+    {/* Address Cards */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {address.slice(0, visibleCount).map((addr, id) => (
         <div
           key={id}
-          className="border p-5 mb-5 rounded-lg shadow-sm bg-white hover:shadow-md transition-all"
+          className="relative bg-white border  rounded-2xl shadow-sm hover:shadow-md transition-all p-6 hover:-translate-y-[2px]"
         >
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-lg font-semibold text-gray-800">
-                Address ID: {addr.address_id}
-              </p>
-              <p className="text-sm text-gray-600">
-                Door No: {addr.doorno}, House: {addr.house}, Street: {addr.street}
-              </p>
-              <p className="text-sm text-gray-600">
-                City: {addr.city} - PIN: {addr.pincode}
-              </p>
-              <p className="text-sm text-gray-600">
-                District: {addr.district} - State: {addr.state}
-              </p>
-              <p className="text-sm text-gray-600">
-                Country: {addr.country} - Company: {addr.company}
-              </p>
-              <p className="text-sm text-gray-600">
-                GST: {addr.gst}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleEdit(addr)}
-                className="px-3 py-1 text-sm bg-gray-100 border rounded-md hover:bg-gray-200"
-              >
-                Edit
-              </button>
-              <button
+          {/* Floating Action Buttons */}
+          <div className="absolute top-4 right-4 flex gap-2">
+            <button
+              onClick={() => handleEdit(addr)}
+              className=" text-[#2A3443] px-3 py-1.5 rounded-lg text-sm border-[1px] border-slate-600 transition"
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => handleDelete(addr)}
+              className="bg-[#FCE8E6] text-[#B43E3E] px-3 py-1.5 rounded-lg text-sm hover:bg-[#f5d5d3] transition"
+            >
+              Delete
+            </button>
+          </div>
 
-  onClick={() => handleDelete(addr)} className="px-3 py-1 text-sm bg-red-100 border border-red-300 text-red-600 rounded-md hover:bg-red-200">
-  Delete
-</button>
-            </div>
+          {/* Address Content */}
+          <div className=" space-y-1 mt-2">
+            <p className="text-lg font-semibold text-[#2A3443] mb-3">
+              Address ID: {addr.address_id}
+            </p>
+            <p className="text-sm">
+              <span className="font-medium">Door No:</span> {addr.doorno}
+            </p>
+            <p className="text-sm">
+              <span className="font-medium">House:</span> {addr.house}
+            </p>
+            <p className="text-sm">
+              <span className="font-medium">Street:</span> {addr.street}
+            </p>
+            <p className="text-sm">
+              <span className="font-medium">City:</span> {addr.city} - {addr.pincode}
+            </p>
+            <p className="text-sm">
+              <span className="font-medium">District:</span> {addr.district} - {addr.state}
+            </p>
+            <p className="text-sm">
+              <span className="font-medium">Country:</span> {addr.country}
+            </p>
+            {addr.company && (
+              <p className="text-sm">
+                <span className="font-medium">Company:</span> {addr.company}
+              </p>
+            )}
+            {addr.gst && (
+              <p className="text-sm">
+                <span className="font-medium">GST:</span> {addr.gst}
+              </p>
+            )}
           </div>
         </div>
       ))}
+    </div>
 
-      {/* States */}
-      {loading && (
-        <p className="text-gray-500 text-center mt-4">Loading your addresses...</p>
-      )}
-      {error && <p className="text-red-500 text-center">{error}</p>}
-      {!loading && address.length === 0 && (
-        <p className="text-gray-500 text-center">No addresses found.</p>
-      )}
+    {/* States */}
+    {loading && (
+      <p className="text-center mt-6">
+        Loading your addresses...
+      </p>
+    )}
+    {error && <p className="text-center text-red-500 mt-6">{error}</p>}
+    {!loading && address.length === 0 && (
+      <p className="text-center  mt-6">
+        No addresses found.
+      </p>
+    )}
 
-      {/* Edit Modal */}
     {/* Edit Modal */}
-{isEditOpen && (
-  <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-    <div className="bg-[#FAF6F4] w-[98%] max-w-2xl p-4 rounded-2xl shadow-lg relative">
-      
-      {/* Close button */}
-      <button
-        type="button"
-        onClick={() => setIsEditOpen(false)}
-        className="absolute top-4 right-4 text-[#6C5950] hover:text-black"
-      >
-        ✕
-      </button>
-
-      {/* Heading */}
-      <h2 className="text-2xl font-semibold text-[#6C5950] mb-6">
-        Edit Address
-      </h2>
-
-
-      <hr className="border-[#B39384]/50 mb-6" />
-
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="gap-2 grid grid-cols-2 items-center">
-
-<div>
-
-        <span className="text-[14px] font-[luxia] text-[#6C5950]">Door Num :</span>
-        <input
-          type="text"
-          name="doorno"
-          placeholder="Door No"
-          value={formData.doorno || ""}
-          onChange={handleChange}
-          className="w-full border border-[#B39384] rounded-md px-3 py-2 placeholder-[#B39384] focus:outline-none"
-        />
-        <span className="text-[14px] font-[luxia] text-[#6C5950]">House :</span>
-        <input
-          type="text"
-          name="house"
-          placeholder="House"
-          value={formData.house || ""}
-          onChange={handleChange}
-          className="w-full border border-[#B39384] rounded-md px-3 py-2 placeholder-[#B39384] focus:outline-none"
-        />
-        <span className="text-[14px] font-[luxia] text-[#6C5950]">Street :</span>
-        <input
-          type="text"
-          name="street"
-          placeholder="Street"
-          value={formData.street || ""}
-          onChange={handleChange}
-          className="w-full border border-[#B39384] rounded-md px-3 py-2 placeholder-[#B39384] focus:outline-none col-span-2 md:col-span-1"
-        />
-        <span className="text-[14px] font-[luxia] text-[#6C5950]">City :</span>
-        <input
-          type="text"
-          name="city"
-          placeholder="City"
-          value={formData.city || ""}
-          onChange={handleChange}
-          className="w-full border border-[#B39384] rounded-md px-3 py-2 placeholder-[#B39384] focus:outline-none"
-        />
-        <span className="text-[14px] font-[luxia] text-[#6C5950]">Pincode :</span>
-        <input
-          type="text"
-          name="pincode"
-          placeholder="Pincode"
-          value={formData.pincode || ""}
-          onChange={handleChange}
-          className="w-full border border-[#B39384] rounded-md px-3 py-2 placeholder-[#B39384] focus:outline-none"
-        />
-    
-</div>
-
-<div>
-        <span className="text-[14px] font-[luxia] text-[#6C5950]">District :</span>
-        <input
-          type="text"
-          name="district"
-          placeholder="District"
-          value={formData.district || ""}
-          onChange={handleChange}
-          className="w-full border border-[#B39384] rounded-md px-3 py-2 placeholder-[#B39384] focus:outline-none"
-        />
-        <span className="text-[14px] font-[luxia] text-[#6C5950]">State :</span>
-        <input
-          type="text"
-          name="state"
-          placeholder="State"
-          value={formData.state || ""}
-          onChange={handleChange}
-          className="w-full border border-[#B39384] rounded-md px-3 py-2 placeholder-[#B39384] focus:outline-none"
-        />
-        <span className="text-[14px] font-[luxia] text-[#6C5950]">Country :</span>
-        <input
-          type="text"
-          name="country"
-          placeholder="Country"
-          value={formData.country || ""}
-          onChange={handleChange}
-          className="w-full border border-[#B39384] rounded-md px-3 py-2 placeholder-[#B39384] focus:outline-none"
-        />
-        <span className="text-[14px] font-[luxia] text-[#6C5950]">Company :</span>
-        <input
-          type="text"
-          name="company"
-          placeholder="Company"
-          value={formData.company || ""}
-          onChange={handleChange}
-          className="w-full border border-[#B39384] rounded-md px-3 py-2 placeholder-[#B39384] focus:outline-none col-span-2"
-        />
-
-        <span className="text-[14px] font-[luxia] text-[#6C5950]">Gst :</span>       
-        <input
-          type="text"
-          name="gst"
-          placeholder="GST"
-          value={formData.gst || ""}
-          onChange={handleChange}
-          className="w-full border border-[#B39384] rounded-md px-3 py-2 placeholder-[#B39384] focus:outline-none col-span-2"
-        />
-</div>
-        {/* Buttons */}
-        <div className="col-span-2 flex justify-between mt-6">
+    {isEditOpen && (
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">
+        <div className="bg-[#FAF6F4] border rounded-2xl shadow-2xl w-[95%] max-w-3xl p-8 relative">
+          {/* Close Button */}
           <button
             type="button"
             onClick={() => setIsEditOpen(false)}
-            className="px-6 py-3 border border-[#B39384] rounded-md text-[#6C5950] hover:bg-[#EDE2DD]"
+            className="absolute top-5 right-5  hover:text-[#2A3443] text-lg"
           >
-            Back
+            ✕
           </button>
-          <button
-            type="submit"
-            className="px-6 py-3 bg-[#2A3443] text-white rounded-md hover:opacity-90"
-          >
-            Edit
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-)}
 
-    </div>
+          {/* Header */}
+          <h2 className="text-2xl font-semibold text-[#2A3443] mb-6">
+            Edit Address
+          </h2>
+          <hr className=" mb-6" />
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {[
+              'doorno', 'house', 'street', 'city', 'pincode',
+              'district', 'state', 'country', 'company', 'gst'
+            ].map((field) => (
+              <div key={field} className="flex flex-col">
+                <label className="text-[14px] font-[luxia] mb-1 capitalize">
+                  {field === 'gst' ? 'GST' : field}
+                </label>
+                <input
+                  type="text"
+                  name={field}
+                  placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                  value={formData[field] || ''}
+                  onChange={handleChange}
+                  className="w-full border rounded-lg px-4 py-2  focus:outline-none focus:ring-1 focus:ring-[#2A3443]/40"
+                />
+              </div>
+            ))}
+
+            {/* Buttons */}
+            <div className="col-span-2 flex justify-between mt-8">
+              <button
+                type="button"
+                onClick={() => setIsEditOpen(false)}
+                className="px-6 py-3 border rounded-lg hover:bg-[#EDE2DD] transition"
+              >
+                Back
+              </button>
+              <button
+                type="submit"
+                className="px-6 py-3 bg-[#2A3443] text-white rounded-lg hover:opacity-90 transition"
+              >
+                Save Changes
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    )}
+  </div>
+</div>
+
   );
 }
 
